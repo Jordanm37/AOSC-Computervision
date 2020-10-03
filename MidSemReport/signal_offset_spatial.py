@@ -3,6 +3,9 @@ import time
 import matplotlib.pyplot as plt
 from itertools import islice
 
+#cache dictionary
+product_cache = {}
+
 
 
 def calculate_energy( p, t, offset, len_p ): # - memoise 
@@ -47,14 +50,20 @@ def calculate_score( pattern, template, offset):
     ----------------
         score  Scalar float of correlation score between pattern and template slice
      """    
-    score  = 0 
+    #not faster 
+    # slice_template = template[ offset : offset + len(pattern) ]
+    # score  = np.dot( pattern, slice_template ) 
     #Mutltiply and add each element of the pattern and template
+    score = 0 
     for i in range(len( pattern )):
         o = i + offset
         #try:
-        score += pattern[ i ] * template[ o ]
+        if template[o] > 0 and pattern[i] > 0:
+            if (i,o) not in product_cache:
+                product_cache[ (i,o) ] = pattern[ i ] * template[ o ]
+            score += product_cache[ (i,o) ] 
         #except:
-        #    print( "Error line 26", pattern, template )
+            #print( "Error line 26", pattern, template )
 
     return score
 
@@ -108,7 +117,7 @@ def find_best_match( score ):
     return max_element, index
 
 
-def n_corr( pattern, template): #change later to signal 1 and 2 as inputs
+def n_corr( pattern, template, debug = False ): #change later to signal 1 and 2 as inputs
     """
     Normed cross correlation of two 1D arrays
  
@@ -138,21 +147,24 @@ def n_corr( pattern, template): #change later to signal 1 and 2 as inputs
     template_arr = np.array( template )
     
     #Find normed cross correlation from convolution of pattern with template array slices
+    t_start = time.time()
     for i in range( len( scores ) ):
+        t_step = time.time()
         scores[ i ] = calculate_score( pattern, template, i)
         #print( scores )
         #Whenever the cross correlation is zero, the cross correlation is not calculated 
         if  scores[i]!=0 : 
             norm[ i ] = calculate_energy( pattern_sq_sum, template_arr, i, len(pattern))
             norm_scores[i] = scores[ i ]/norm[ i ]
-        # tn = time.time()
-        # print( f'{ i } run time =  { tn - t_start}')
+        tn = time.time()
+        if debug: print( f'{ i } step time =  { tn - t_step} run time =  { tn - t_start}')
         
         #print( "s=", scores,"\n", "n=", norm, "\n")
 
     return norm_scores
+    #return norm
 
-def find_offset(pattern, template): 
+def find_offset(pattern, template, debug = False): 
     """
     1D array offset index and value from normed cross correlation 
  
@@ -167,7 +179,7 @@ def find_offset(pattern, template):
         (best_score, best_match)  Index of offset found from cross correlation
      """     
 
-    norm_corr = n_corr( pattern, template)
+    norm_corr = n_corr( pattern, template, debug )
 
     best_score, best_match = find_best_match( norm_corr )
     #print( best_match )
@@ -211,10 +223,12 @@ def read_file( fileName ):
 
 def main():
 
+    debug = False
+
     time_start = time.time()
 
-    data_1 = read_file( "sensor1Data.txt" ) 
-    data_2 = read_file( "sensor2Data.txt" )
+    data_1 = read_file( "MidSemReport\sensor1Data.txt" ) 
+    data_2 = read_file( "MidSemReport\sensor2Data.txt" )
     data_1_len = len(data_1)
     # print( data_1_len, len( data_2 ) )
     sample_period = 1 / 44100
@@ -222,7 +236,7 @@ def main():
     #Debugging size 
     size = data_1_len 
 
-    offset, corr_value = find_offset( data_1[:size], data_2[:size] )
+    offset, corr_value = find_offset( data_1[:size], data_2[:size], debug )
 
     offset_time = offset*sample_period
 
@@ -246,4 +260,8 @@ def main():
 if __name__ == '__main__':
     
     main()
+
+
+
+
 
