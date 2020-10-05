@@ -127,6 +127,7 @@ def corr(pattern,template):
     fft_1 = arr_fft(pattern)
     fft_2 = arr_fft(template)
     fft_2_conj = arr_complex_conj(fft_2)
+    #fft_2_conj = np.flip(fft_2)
 
     corr = arr_ifft(fft_2_conj * fft_1)
     corr /= np.max(corr)
@@ -210,8 +211,6 @@ def low_pass(pattern, Fs, len, label, freq ):
      
 def main():
 
-    
-
     data_1 = np.array(read_file( "sensor1Data.txt")) 
     data_2 = np.array(read_file( "sensor2Data.txt"))
    
@@ -226,20 +225,32 @@ def main():
 
     #Store signal information
     Fs = 44100 #Sampling frequency
-    T_s = 1 / Fs 
+    sample_period = 1 / Fs 
     speed_m_sec = 333
 
-    start = time.time()
+    time_start = time.time()
     corr_sig_1_2 = corr( data_1_shift, data_2_shift)
+    t_total = time.time() - time_start
+
+    npts = len(data_1) - 1
+    lags = np.arange(-npts , npts)
+
+    maxlag = lags[np.argmax(corr_sig_1_2)]
+    print("\nmax correlation is at lag %d" % maxlag)
 
     #Find offset
-    offset = np.argmax(corr_sig_1_2)
-    offset_sec = offset * T_s
-    sensor_distance = offset_sec * speed_m_sec
+    offset = maxlag
+    offset_sec = offset * sample_period
+    sensor_distance = abs( offset_sec * speed_m_sec )
 
-    end = time.time()
-                
-    print("offset time = ", offset_sec, " offset position =", offset, " sensor distance =", sensor_distance, " run time = ", end - start )
+
+    print("\nFreq. = %d"%Fs)
+    print("Off-Set = %d"%offset)
+    print("Off-Set Time = %.3f"%offset_sec)
+    print("\nDistance between two sensors = %.2f meters"%sensor_distance)              
+    print( "\nRun time = %.2f"%t_total )
+
+
 
     # print(fft_1, '\n')
     # print(corr, '\n')
@@ -265,8 +276,9 @@ def main():
     plt.title("Signal_2_raw")
 
     plt.subplot(313)  
-    plt.plot(corr_sig_1_2)
-    plt.title("CCR")
+    plt.plot(lags, corr_sig_1_2)
+    plt.ylabel('cross-correlation')
+    plt.xlabel('lag of Sensor-1 relative to Sensor-2')
     plt.show()   
 
 if __name__ == '__main__':

@@ -300,12 +300,25 @@ read the image
 figure out z axis
 create a 2d array 17, 21
 
+
+from left image (x, y) location of dot -- input 1
+from right image (x, y) location of dot -- input 2
+
+output real worl coord of point (x, y, z) -- output
+
+
 def generate_real_world_coords(depth, width, height):
     coords = []
-    for y in range(0, 800, 50):
+    for y in range(0, 801, 50):
         x_coords = []
-        for x in range(-500, 500, 50):
-            x_coords.append([x, y])
+        for x in range(-500, 501, 50):
+            x_coords.append([x, y, depth])
         coords.append(x_coords)
+    coords.reverse()
+    return np.array(coords)
 
-    return coords
+print(generate_real_world_coords(2000, 10, 10))
+
+#####
+
+plt.imshow(generate_real_world_coords(:,:,0))

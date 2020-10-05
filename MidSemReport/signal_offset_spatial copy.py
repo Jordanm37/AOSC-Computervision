@@ -1,11 +1,45 @@
 import numpy as np
 import time
+import math
 import matplotlib.pyplot as plt
 from itertools import islice
 
 #cache dictionary
 product_cache = {}
 
+#version 2
+#Added functions to improve computation time 
+#1
+def CalcMean(lst):
+    Sum = 0
+    for i in range(0,len(lst)):
+        Sum = Sum + lst[i]
+    Mean = Sum/len(lst)    
+    return(Mean)
+
+#2
+def CalcSD(lst,Mean):
+    SD = 0
+    for i in range(0,len(lst)):
+        SD = SD + (lst[i]-Mean)*(lst[i]-Mean)
+    SD = math.sqrt(SD/len(lst))        
+    return(SD)    
+
+#3
+def CalcCrossCorr(f,g,fmean,gmean):
+    Sum=0
+    for i in range(0,len(f)):
+        Sum = Sum + (f[i]-fmean)*(g[i]-gmean)
+    CrossCorr = Sum/len(f)
+    return(CrossCorr)
+
+#4    
+def CalcNormalisedCrossCorr(f,g,fmean,gmean,fsd,gsd):
+    Sum = 0
+    for i in range(0,len(f)):
+        Sum = Sum + (f[i]-fmean)*(g[i]-gmean)
+    NormCrossCorr = Sum/(len(f)*fsd*gsd)
+    return(NormCrossCorr)
 
 
 def calculate_energy( p, t, offset, len_p ): # - memoise 
@@ -59,13 +93,12 @@ def calculate_score( pattern, template, offset):
         o = i + offset
         #try:
         if template[o] > 0 and pattern[i] > 0:
-            if (i,o) not in product_cache:
-                product_cache[ (i,o) ] = pattern[ i ] * template[ o ]
-            score += product_cache[ (i,o) ] 
+            score += pattern[ i ] * template[ o ]
         #except:
             #print( "Error line 26", pattern, template )
 
     return score
+
 
 
 def zero_padding( pattern, template ):
@@ -116,7 +149,7 @@ def find_best_match( score ):
     return max_element, index
 
 
-def n_corr( pattern, template, debug = False ): #change later to signal 1 and 2 as inputs
+def norm_cross_corr( pattern, template, debug = False ): #change later to signal 1 and 2 as inputs
     """
     Normed cross correlation of two 1D arrays
  
@@ -149,9 +182,9 @@ def n_corr( pattern, template, debug = False ): #change later to signal 1 and 2 
     t_start = time.time()
     for i in range( len( scores ) ):
         t_step = time.time()
-        scores[ i ] = calculate_score( pattern, template, i)
+        scores[ i ] = calculate_score( pattern, template_padded, i)
         #print( scores )
-        #Whenever the cross correlation is zero, the cross correlation is not calculated 
+        #Whenever the norm is zero, the cross correlation is not calculated 
         if  scores[i]!=0 : 
             norm[ i ] = calculate_energy( pattern_sq_sum, template_pad_arr, i, len(pattern))
             norm_scores[i] = scores[ i ]/norm[ i ]
@@ -161,31 +194,23 @@ def n_corr( pattern, template, debug = False ): #change later to signal 1 and 2 
         #print( "s=", scores,"\n", "n=", norm, "\n")
 
     return norm_scores
-    #return norm
 
-def find_offset(pattern, template, debug = False): 
+
+def find_offset( correlation_arr, pattern ): 
     """
-    1D array offset index and value from normed cross correlation 
+    1D array offset index and value from  cross correlation 
  
     Inputs:
     ----------------
-        pattern   Pattern must be non empty 
-
-        template   Template, search space with similar dimensionality to pattern
+        correlation_arr   Calculated array of cross correlation coefficients 
         
     Output:
     ----------------
         (best_score, best_match)  Index of offset found from cross correlation
      """     
 
-    norm_corr = n_corr( pattern, template, debug )
-
-    best_score, best_match = find_best_match( norm_corr )
+    best_score, best_match = find_best_match( correlation_arr )
     #print( best_match )
-
-    #Plot array of cross correlation
-    plt.figure()
-    plt.plot(norm_corr)
 
     # subtract padding: - (len - 1)
     return best_match - len( pattern ) + 1, best_score 
@@ -222,45 +247,133 @@ def read_file( fileName ):
 
 def main():
 
-    debug = False
-
-    time_start = time.time()
-
-    data_1 = read_file( "MidSemReport\sensor1Data.txt" ) 
-    data_2 = read_file( "MidSemReport\sensor2Data.txt" )
-    data_1_len = len(data_1)
-    # print( data_1_len, len( data_2 ) )
-    sample_period = 1 / 44100
-    speed_sound = 333
-    #Debugging size 
-    size = data_1_len 
-
-    offset, corr_value = find_offset( data_1[:size], data_2[:size], debug )
-
-    offset_time = offset*sample_period
-
-    sensor_distance = offset * sample_period * speed_sound
-
-    t_total = time.time() - time_start
-                
-    print("offset time = ", offset_time, "offset position =", offset,"sensor distance =", sensor_distance, "run time = ", t_total )
+    debug = True
+    use_SSD = True #Calculate using library functions and mean
     
-    #plotting
-    plt.figure()
-    plt.subplot(211)  
-    plt.plot(data_1[:size])
-    plt.subplot(212)  
-    plt.plot(data_2[:size])
-    plt.show()   
+    #Read signal data
+    S1Data = read_file( "sensor1Data.txt" ) 
+    S2Data = read_file( "sensor2Data.txt" )
 
+    # print( len(S1_Data), len( S2_Data ) )
+
+    #Debugging size for smaller runs 
+    if debug:
+        Count=100
+        t = []
+        S1_Data=[]
+        S2_Data=[]
+        for c in range(0,Count):
+            t.append(c+1) #Keep track of index position in loop
+            S1_Data.append(float(S1Data[c]))
+            S2_Data.append(float(S2Data[c]))
+    else:
+        S1_Data=S1Data
+        S2_Data=S2Data
+
+
+    print("Sensor-1 Data length = %d"%len(S1_Data))
+    print("Sensor-2 Data length = %d"%len(S2_Data))
+
+
+    #This method uses the mean and standard deviation to remove noise from the signal data
+    if use_SSD: 
+        time_start = time.time()
+
+        S1_Mean = CalcMean( S1_Data )
+        S2_Mean = CalcMean( S2_Data )
+
+        S1_sdev = CalcSD( S1_Data, S1_Mean )
+        S2_sdev = CalcSD( S2_Data, S2_Mean ) 
+
+        CCR = CalcCrossCorr( S1_Data, S2_Data,S1_Mean, S2_Mean)
+        NormCCR = CalcNormalisedCrossCorr( S1_Data, S2_Data, S1_Mean, S2_Mean, S1_sdev, S2_sdev)
+
+        #Use library functions to find CCR
+        npts = len( S1_Data )
+        t = np.linspace(0, len(S1_Data ), npts)
+        y1 = np.array( S1_Data )
+        y2 = np.array( S2_Data )        
+        ccov = np.correlate(y1 - y1.mean(), y2 - y2.mean(), mode='full')
+        n_ccor = ccov / (npts * y1.std() * y2.std())
+
+        t_total = time.time() - time_start
+        #Calculate domain of lagged times
+        lags = np.arange(-npts + 1, npts)
+
+        print("\nMean of Sensor Data-1 = %f"%S1_Mean)
+        print("Mean of Sensor Data-2 = %f"%S2_Mean)
+
+        print("\nStandard Deviation of Sensor Data-1  = %.3f"%S1_sdev)
+        print("Standard Deviation of Sensor Data-2  = %.3f"%S2_sdev)
+
+        print("\nCross Correlation = %.3f"%CCR)
+        print("Normalized Cross Correlation = %.3f"%NormCCR)
+
+
+    #Do without SSD
+    else:
+        time_start = time.time()
+        # size = len(S1_Data)
+        n_ccor = norm_cross_corr( S1_Data, S2_Data, debug )
+        
+        offset, NormCCR = find_offset( n_ccor, S1Data )
+        
+        t_total = time.time() - time_start
+        #Calculate domain of lagged times
+        npts = len(S1_Data) - 1
+        lags = np.arange(-npts , npts)
+
+
+    #Plots of results
+    SubPlotRow=2
+    SubPlotCol=2
+
+    plt.subplot(SubPlotRow,SubPlotCol,1)
+    plt.plot(t,S1_Data, color = 'red')
+    plt.title("Sensor-1 Data Plot")
+    plt.grid()
+
+    plt.subplot(SubPlotRow,SubPlotCol,2)
+    plt.plot(t,S2_Data, color = 'blue')
+    plt.title("Sensor-2 Data Plot")
+    plt.grid()
+
+    plt.subplot(SubPlotRow,SubPlotCol,3)
+    plt.plot(t,S1_Data, color = 'red')
+    plt.plot(t,S2_Data, color = 'blue')
+    plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
+    plt.grid()
+
+    plt.subplot(SubPlotRow,SubPlotCol,4)
+    plt.plot(lags, n_ccor)
+    plt.ylim(-1.1, 1.1)
+    plt.ylabel('cross-correlation')
+    plt.xlabel('lag of Sensor-1 relative to Sensor-2')
+    plt.grid()
+
+    maxlag = lags[np.argmax(n_ccor)]
+    print("\nmax correlation is at lag %d" % maxlag)
+
+
+    #Calculation distance and plot of lag 
+    offset = maxlag
+    Freq = 44000
+    sample_period = 1 / 44100
+    speed_sound = 333 
+
+    offset_time = offset * sample_period
+    sensor_distance = abs(offset * sample_period * speed_sound)
+
+    print("\nFreq. = %d"%Freq)
+    print("Off-Set = %d"%offset)
+    print("Off-Set Time = %.3f"%offset_time)
+    print("\nDistance between two sensors = %.2f meters"%sensor_distance)              
+    print( "\nRun time = %.2f"%t_total )
+
+    plt.show()
  
    
     
 if __name__ == '__main__':
     
     main()
-
-
-
-
-
