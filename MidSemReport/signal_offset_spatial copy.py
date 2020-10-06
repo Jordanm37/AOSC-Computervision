@@ -209,7 +209,7 @@ def find_offset( correlation_arr, pattern ):
         (best_score, best_match)  Index of offset found from cross correlation
      """     
 
-    best_score, best_match = find_best_match( correlation_arr )
+    best_score, best_match = find_best_match( correlation_arr ) #clean this up
     #print( best_match )
 
     # subtract padding: - (len - 1)
