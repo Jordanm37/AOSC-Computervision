@@ -3,6 +3,7 @@ import time
 import math
 import matplotlib.pyplot as plt
 from itertools import islice
+from numba import jit
 
 #cache dictionary
 product_cache = {}
@@ -42,7 +43,7 @@ def CalcNormalisedCrossCorr(f,g,fmean,gmean,fsd,gsd):
     return(NormCrossCorr)
 
 
-def calculate_energy( p, t, offset, len_p ): # - memoise 
+def calculate_energy( p, g_slice ): # - memoise 
     """
     Normalisation for 1D slice of N size array of same length of pattern passed.
     norm= sqrt( sum(f[i]^2) * sum(g[m]^2) )
@@ -61,13 +62,13 @@ def calculate_energy( p, t, offset, len_p ): # - memoise
     ----------------
         norm  Scalar float of variance for a given slice of the template/search and pattern
      """
-    g_slice = t[ offset : offset + len_p ] 
+    #g_slice = t[ offset : offset + len_p ] 
     norm = np.sqrt( p * ( g_slice**2).sum() ) 
     # if norm == 0 :
     #     print ("p=", p, "template=", g_slice, "offset = ", offset, "\n")
     return norm
 
-
+#@jit(nopython=True)
 def calculate_score( pattern, template, offset):
     """
     Correlation for 1D slice of N size template/search array with pattern at given offset. Sum(f[i]*g[i+m])
@@ -163,13 +164,14 @@ def norm_cross_corr( pattern, template, debug = False ): #change later to signal
     ----------------
         norm_scores  Normed cross correlation array
      """       
-
+    len_p = len(pattern)
+    
     #Pad and initalise arrays for calculation   
     template_padded = zero_padding( pattern, template )
-    corr_len = len( template_padded ) - len( pattern )
-    scores = [0] * ( corr_len )
-    norm = [0] * ( corr_len ) 
-    norm_scores = [0] * ( corr_len ) 
+    corr_len = len( template_padded ) - len_p
+    scores = [0.0] * ( corr_len ) #must cast as float for later calculations, prevent error (numba requires all floats)
+    norm = [0.0] * ( corr_len ) 
+    norm_scores = [0.0] * ( corr_len ) 
     #test = [0] * ( len( template ) - len( pattern ) )
     #t_start = time.time()
     
@@ -181,12 +183,18 @@ def norm_cross_corr( pattern, template, debug = False ): #change later to signal
     #Find normed cross correlation from convolution of pattern with template array slices
     t_start = time.time()
     for i in range( len( scores ) ):
+        g_slice = template_pad_arr[ i : i + len_p ] 
         t_step = time.time()
-        scores[ i ] = calculate_score( pattern, template_padded, i)
         #print( scores )
-        #Whenever the norm is zero, the cross correlation is not calculated 
+        # print( pattern)
+        # print( template)
+        score_i = calculate_score( pattern, template_padded, i)
+        #print(score_i)
+        scores[ i ] = score_i
+        #scores[ i ] = calculate_score( pattern, template_padded, i)
+                #Whenever the norm is zero, the cross correlation is not calculated 
         if  scores[i]!=0 : 
-            norm[ i ] = calculate_energy( pattern_sq_sum, template_pad_arr, i, len(pattern))
+            norm[ i ] = calculate_energy( pattern_sq_sum, g_slice)
             norm_scores[i] = scores[ i ]/norm[ i ]
         tn = time.time()
         if debug: print( f'{ i } step time =  { tn - t_step} run time =  { tn - t_start}')
@@ -248,7 +256,7 @@ def read_file( fileName ):
 def main():
 
     debug = True
-    use_SSD = True #Calculate using library functions and mean
+    use_SSD = False #Calculate using library functions and mean
     
     #Read signal data
     S1Data = read_file( "sensor1Data.txt" ) 
@@ -258,7 +266,7 @@ def main():
 
     #Debugging size for smaller runs 
     if debug:
-        Count=100
+        Count=10000
         t = []
         S1_Data=[]
         S2_Data=[]
