@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
 import time
 
+#library function use
+
+
+
+
+
 
 
 def calculate_energy( pattern, template, offset_x, offset_y ):
@@ -202,31 +208,62 @@ def read_image(image_name):
 
 def main():
 
-    start = time.time()
-    
+    use_library = False
+
     motif_image = read_image("wallypuzzle_rocket_man.png")
     test_image = read_image("wallypuzzle_png.png")
-    #print(motif_image)
-    
-    #read average of image. Finish by converting to greyscale 
-    image_mean_1= motif_image[:,:,0:3].mean(axis=2)
-    image_mean_2= test_image[:,:,0:3].mean(axis=2)
-    
-   
-    image_cross, image_cross_value = find_offset( image_mean_1, image_mean_2 )
-    
-    end = time.time()
-    
-    print( "Offset_x = ", image_cross[0], "Offset_y = ", image_cross[1], "Cross value = ", image_cross_value, "run time = ", end - start  )
 
-    plt.ion()
+    if use_library:
+        
 
-    #test_plot = test_image[ image_cross[0] : image_cross[0] + motif_image.shape[0],  image_cross[1] : image_cross[1] + motif_image.shape[1], : ]  
-    #plt.imshow( test_plot )
+
+
+    else:
+
+        start = time.time()
+        
+
+        #print(motif_image)
+        
+        #read average of image. Finish by converting to greyscale 
+        image_mean_1= motif_image[:,:,0:3].mean(axis=2)
+        image_mean_2= test_image[:,:,0:3].mean(axis=2)
+        
+        image_cross, image_cross_value = find_offset( image_mean_1, image_mean_2 )
+        
+        end = time.time()
+        
+        print( "Offset_x = ", image_cross[0], "Offset_y = ", image_cross[1], "Cross value = ", image_cross_value, "run time = ", end - start  )
+
+        plt.ion()
+
+        #test_plot = test_image[ image_cross[0] : image_cross[0] + motif_image.shape[0],  image_cross[1] : image_cross[1] + motif_image.shape[1], : ]  
+        #plt.imshow( test_plot )
 
     #Histogram of colour intensities
     lum_img = test_image[:, :, 0]
     plt.hist(lum_img.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+
+
+
+
+
+    plt.subplot(SubPlotRow,SubPlotRow,1)
+    plt.imshow(Pattern, cmap='gray')
+    plt.title("Pattern")
+
+    plt.subplot(SubPlotRow,SubPlotRow,2)
+    plt.imshow(Gray, cmap='gray')
+    plt.title("Pattern")
+
+    plt.subplot(SubPlotRow,SubPlotRow,3)
+    plt.imshow(Corr, cmap='gray')
+    s = "Cross-Correlation of Pattern and Template: Best Correlation at (" + str(x) + ", "+str(y)+")"
+    plt.title(s)
+    print("Best Cross-Correlation obtained at location (%d, %d)"%(x,y))
+    plt.show()
+
+    print( "\nRun time = %.2f"%t_total )
 
 
 

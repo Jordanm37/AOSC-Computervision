@@ -168,18 +168,18 @@ def find_offset(pattern, template):
         (best_score, best_match)  Index of offset found from cross correlation
      """
 
-    norm_corr = n_corr2d( pattern, template)
+    norm_corr = n_corr2d(pattern, template)
 
     #Plot array of cross correlation
     plt.figure()
     plt.plot(norm_corr)
 
     #best_score, best_match = find_best_match( scores )
-    best_match , match_value = find_best_match( norm_corr )
+    best_match, match_value = find_best_match(norm_corr)
     #print( best_match )
 
     #subtracting centred offset
-    return (best_match[0] - pattern.shape[0]  + 1, best_match[1] -  pattern.shape[1]  + 1 ), match_value
+    return (best_match[0] - pattern.shape[0] + 1, best_match[1] - pattern.shape[1] + 1), match_value
 
 
 def read_image(image_name):
@@ -200,7 +200,7 @@ def read_image(image_name):
     return img
 
 
-def gauss_2d( k ):
+def gauss_2d(k):
     probs = []
     s = 1
     k = k // 2   # 17 / 9 = 1.99   17 // 9 = 1       int(17/9)    3//2 = 1
@@ -221,12 +221,13 @@ corr = n_corr2d(gaussian, image_mean_1)
 
 max = []
 threshold = 0.001
-dots = np.zeros( (corr.shape[0], corr.shape[1]) )  # gives a matrix of n x m with all zeros in it
-for i in range( corr.shape[0] ):
+# gives a matrix of n x m with all zeros in it
+dots = np.zeros((corr.shape[0], corr.shape[1]))
+for i in range(corr.shape[0]):
     for j in range(corr.shape[1]):
-            if corr[i ,j] >= threshold:
-                max.append((i,j))  # [(1,2), (1,3), (2,4)...]
-                dots[i,j] = 1
+        if corr[i, j] >= threshold:
+            max.append((i, j))  # [(1,2), (1,3), (2,4)...]
+            dots[i, j] = 1
 
 print(dots)
 print(gaussian)
