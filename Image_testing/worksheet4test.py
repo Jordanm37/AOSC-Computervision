@@ -9,10 +9,13 @@ import matplotlib.pyplot as plt
 def load_images(filepath):
     '''
     Task 1.
-    This  Function reads two images in the folder one with right in filename another in left in filename. 
-    Convert the two images to numpy array and convert from rgb to blackand white 
-    and Return the two imagages as pattern and template
-    This will return false if there is no file with right and left in the given folder
+    This  Function reads two images in the folder; one 
+    with '_right' in filename another in '_left' in filename. 
+    Convert the two images to numpy array and convert 
+    from rgb to blackand white and return the two images 
+    as pattern and template
+    Return false if there is no file with 
+    '_right' or '_left' in the given folder
     '''
     template_fn = ""
     pattern_fn = ""
@@ -50,7 +53,9 @@ def load_images(filepath):
 def get_grid(image, numY, numX):
     '''
     Task 2.a.
-    This  Function Receives one image and devide the image to multiple windows based on numY and numX as number of widows in y and x  axis 
+    This  Function receives one image and divides the image 
+    into multiple windows based on numY and numX as division 
+    of widows in y and x axis 
     This reurns a 2D array of smaller images(windows)
     '''
     #import pdb; pdb.set_trace()
@@ -73,9 +78,12 @@ def get_grid(image, numY, numX):
 def get_grid_overlap(image, numY, numX, overlap):
     '''
     Task 2.b.
-    This  Function Receives one image and divide the image to multiple windows based on numY and numX  and Overlap
-    In this function calculates the widow location depending on the overlap
-    This reurns a 2D array of smaller images(windows)
+    This  Function receives one image and divides the 
+    image into multiple windows based on numY and numX and Overlap. 
+    Overlap is the amount of the windows that will be overlapped.  
+    In this function calculates the widow location 
+    depending on the overlap
+    This reurns a 2D array of smaller images(windows) that are overlapped
     '''
     Y, X = image.shape
     Ylen = int(Y / numY)
@@ -97,20 +105,42 @@ def get_grid_overlap(image, numY, numX, overlap):
         i = i + Yol
     return wins
 
+    ''' Perhaps better form...
+    for i in range(0, Y, 5):
+        row = []
+        for j in range(0, X, Xol):
+            row.append(image[i: (i + Ylen), j: (j + Xlen)])
+        wins.append(row)
+
+    return wins
+
+
+    '''
+
+
+
 # Task 3.a
 
 
 def get_SearchArea(image, loc, winSize, winNo):
     '''
     Task 3.a.
-    This  Function Receives one image and retuns an subsection of the image cented at loc and of size depencing on winsize and winNo
-    winSize is the size of the original windo. and win no is the no of repetation  
-    This reurns  smaller images(search area windows)
+    This  Function Receives one image and retuns a
+    subsection of the image cented at loc and of 
+    size depending on winsize and winNo. Where winsize
+    is the size of a specified image window
+    winNo is the number of windows for the search area
+    dimnesion to be given by. eg. winNo= > search area 
+    dimension is 3x3 image windows in size.
+    This reurns larger or smaller images(search area windows)
     '''
     Y, X = image.shape
 
-    Ylen = int(winSize[0] * winNo / 2)
-    Xlen = int(winSize[1] * winNo / 2)
+    Ylen = int(winSize[0] * 2.5)
+    Xlen = int(winSize[1] * 2.5)
+
+    # Ylen = int(winSize[0] * winNo / 2)
+    # Xlen = int(winSize[1] * winNo / 2)
 
     Ymin = loc[0] - Ylen
     Ymax = loc[0] + Ylen
@@ -139,9 +169,12 @@ def get_SearchArea(image, loc, winSize, winNo):
 def get_SearchArea_Horizontal(image, loc, winSize, winNo):
     '''
     Task 3.a.
-    This  Function Receives one image and retuns an subsection of the image cented at loc and of size depencing on winsize and winNo
-    winSize is the size of the original windo. and win no is the no of repetition . But in this case repetition is considered only for horizontal axis 
-    This reurns  smaller images(search area windows)
+    This  Function Receives one image and retuns 
+    a subsection of the image cented at loc and 
+    of size depending on winsize and winNo
+    This is the same a gridSearchArea except only
+    in the horizontal axis
+    This reurns larger or smaller images(search area windows)
     '''
     Y, X = image.shape
 
@@ -176,8 +209,13 @@ def get_SearchArea_Horizontal(image, loc, winSize, winNo):
 def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     '''
     Task 5.
-    This  Function Receives two image pattern and template search the pattern in template using cross corrilation and find the best match by finding maximam of the corrilation result
-    This Function returns two numbers for y and x axis indicating the respecive distance  
+    This  Function Receives two images, pattern and 
+    template. It searches for the pattern in the
+    template using cross correlation and finds 
+    the best match by finding maximum of the 
+    correlation result
+    This Function returns two numbers for y and 
+    x axis indicating the respective distance  
     '''
     WinCenOrg = [ygrid, xgrid]
     nny, nnx = template.shape
@@ -187,6 +225,7 @@ def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     dpy, dpx = np.unravel_index(np.argmax(corr), corr.shape)
     dpy = dpy - (nny / 2)
     dpx = dpx - (nnx / 2)
+
     print(dpy, dpx)
     return [dpy, dpx]
 
@@ -195,9 +234,14 @@ def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
 def get_MultipassCrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     '''
     Task 4.
-    This  Function Receives two image pattern and template first search the pattern in template and get an distantance then devide the pattern in 4 parts and also reduce the 
-    template size and searches for the individual 4 sub section and get more accurate distance values.
-    this Function returns two (2x2) array for y and x axis contingin the respecive distance  
+    This  Function Receives two images; pattern and 
+    template. First searches for the pattern in the template 
+    and gets distance between, then divides the pattern 
+    into four parts and also reduces the 
+    template size and searches for the individual 
+    four sub sections and gets more accurate distance values.
+    This function returns two (2x2) array for y 
+    and x axis containing the respective distances  
     '''
     y, x = get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid)
     pDim = pattern.shape
@@ -225,7 +269,9 @@ def get_MultipassCrossCorrelation(pattern, template, winSize, ygrid, xgrid):
 def ProcessImages(filepath):
     '''
     Task 6a.
-    This  Function Receives the folderpath containing two image and calulates the distance map using  get_MultipassCrossCorrelation
+    This  Function Receives the folderpath containing 
+    two images and calculates the distance map using  
+    get_MultipassCrossCorrelation
     This returns the distance map as a 2D array 
     '''
     pattern, template = load_images(filepath)
@@ -270,7 +316,8 @@ def ProcessImages(filepath):
 def ProcessImages2(filepath):
     '''
     Task 6b.
-    This  Function Receives the folderpath containing two image and calulates the distance map using  get_CrossCorrelation
+    This  Function Receives the folderpath containing 
+    two image and calulates the distance map using  get_CrossCorrelation
     This returns the distance map as a 2D array 
     '''
     #import pdb; pdb.set_trace()   #debugging for reading in
@@ -296,9 +343,9 @@ def ProcessImages2(filepath):
         dd = []
         print(f' i = {i}')
         for j in range(0, nn):
-            import pdb; 
-            if (j == 1 and i == 1):
-                pdb.set_trace() 
+            # import pdb; 
+            # if (j == 1 and i == 1):
+            #     pdb.set_trace() 
             print(f' j = {j}')
             TempWin = wins[i][j]
 
@@ -310,6 +357,7 @@ def ProcessImages2(filepath):
                 TempWin, SearchWin, [leny, lenx], TempWinCen[0], TempWinCen[1])
             dpy[i][j] = abs(y)
             dpx[i][j] = abs(x)
+            import pdb; pdb.set_trace() 
 
     print(dpy, dpx)
     return[dpy, dpx]
@@ -317,8 +365,11 @@ def ProcessImages2(filepath):
 
 def main():
     '''
-    Final Implimentation 
-    The functions ProcessImages or ProcessImages2 can be called with the file path as ardumant and receive the distance map for plotting or other uses 
+    Main implentation with toggle for single pass
+    or multi pass correlation 
+    The functions ProcessImages or ProcessImages2 can 
+    be called with the file path as agrument and receive 
+    the distance map for plotting. 
     '''
     multi = False  # switch using multi pass correlation or single
 
