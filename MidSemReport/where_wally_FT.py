@@ -175,7 +175,7 @@ def crr_2d( pattern, template):
 
     # a * b
     #Offset pattern due to padding
-    product = pattern_fft_conj[0: pattern_fft_conj.shape [0]-1,0: pattern_fft_conj.shape [1] -1] *  template      
+    product = pattern_fft_conj[0: pattern_fft_conj.shape [0]-1, 0: pattern_fft_conj.shape [1] -1] *  template      
         
     ccr = matrix_ifft(product)
     
@@ -210,18 +210,34 @@ def find_offset(pattern, template):
 
 def main():
 
-    start = time.time()
+    patternDir = "wallypuzzle_rocket_man.png"
+    templateDir = "wallypuzzle_png.png"
 
-    motif_image = read_image("wallypuzzle_rocket_man.png")
-    test_image = read_image("wallypuzzle_png.png")
+    motif_image = read_image( patternDir )
+    test_image = read_image( templateDir )
 
     image_mean_1= motif_image[:,:,0:3].mean(axis=2)
     image_mean_2= test_image[:,:,0:3].mean(axis=2)
 
     #plot shift FFT of image
+    plt.subplot(2,2,1)
     plt.imshow( np.fft.fftshift( np.imag(matrix_fft(image_mean_1)) ) ) 
+    plt.subplot(2,2,2)
+    plt.imshow( mpimg.imread( patternDir ) )
+    
+    
+    plt.subplot(2,2,3)
+    plt.imshow( mpimg.imread( templateDir ) )  
+    circle=plt.Circle((0,0),100,facecolor='red', edgecolor='blue',linestyle='dotted',linewidth='2.2')
+    plt.gca().add_patch(circle)  
     plt.show()
 
+
+
+
+
+
+    start = time.time()
     image_cross, image_cross_value = find_offset( image_mean_1, image_mean_2)
 
     end = time.time()
