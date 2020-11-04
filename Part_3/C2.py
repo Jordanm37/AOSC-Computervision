@@ -11,8 +11,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.spatial import distance
 
-
-img_orig = cv2.imread(r'D:\PARISTI\PP\P_41 OpenCV Pattern search\Final\2.PNG')
+'''
+Image reading and preprocessing
+'''
+img_orig = cv2.imread(r'C:\\Users\Jordan\\Documents\\\AOSC-Computervision\\Part_3\\2.png')
 img_bgr = img_orig
 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 # Applies the bilateral filter to an image to reduce unwanted noise 
@@ -27,9 +29,8 @@ img_gray2 = cv2.filter2D(img_gray, -1, kernel_sharpening)
 img_gray3 = cv2.medianBlur(img_gray,1)  # Blurs an image using the median filter.
 
 # To import temlplate as it is required to count circle by CCORR_NORMED method
-# and applying same precessing
-# if you don't want to use CCORR_NORMED method than template is not needed
-imr_template = cv2.imread(r'D:\PARISTI\PP\P_41 OpenCV Pattern search\Final\2_T4.PNG')
+# and applying same precessing 
+imr_template = cv2.imread(r'C:\\Users\Jordan\\Documents\\\AOSC-Computervision\\Part_3\\2_T4.PNG')
 img_bgr_t = imr_template
 img_rgb_t = cv2.cvtColor(img_bgr_t, cv2.COLOR_BGR2RGB)
 img_blur_t = cv2.bilateralFilter(img_rgb_t, d = 9, sigmaSpace = 75, sigmaColor =75)
@@ -41,7 +42,7 @@ img_gray_t2 = cv2.filter2D(img_gray_t, -1, kernel_sharpening)
 
 res = cv2.matchTemplate(img_gray2,img_gray_t2,cv2.TM_CCORR_NORMED)
 
-# This parameter (0.5-0.95) should be set by trial and error method after visulizing 
+# This parameter (0.5-0.95) should be set by trial and error method after visualizing 
 threshold_1 = 0.65   
 loc = np.where( res >= threshold_1)
 pt_p = (0,0)
@@ -84,7 +85,7 @@ plt.title('Output Image by CCORR_NORMED'), plt.xticks([]), plt.yticks([])
 
 
 ## Method 2 of Hough circle method to count circles
-# minDist, param1 and param2 must be tune by trial and error
+# minDist, param1 and param2 must be refined by trial and error
 circles = cv2.HoughCircles(img_gray3, cv2.HOUGH_GRADIENT, dp = 1, minDist = 10,
                           param1=100, param2=15, minRadius=0, maxRadius=18)
 detected_circles = np.uint16(np.around(circles))
@@ -94,7 +95,7 @@ for (x, y ,r) in detected_circles[0, :]:
     # cv2.circle(img_rgb, (x, y), r, (0, 255, 0), 1)
     cv2.circle(img_rgb2, (x, y), 2, (255, 0, 255), 5)
     
-count_1 = len(detected_circles[0, :]);
+count_1 = len(detected_circles[0, :])
 print("Circle count by Hough circle method : ",count_1) 
 
 plt.figure()
@@ -105,7 +106,7 @@ plt.title('Output by Hough circle method'), plt.xticks([]), plt.yticks([])
 
 ## The distribution of Sphere diameter and average in pixels
 Radius = circles[0,:,2]
-Diameter = Radius*2;
+Diameter = Radius*2
 mean_Diameter = np.mean(Diameter)
 hist1, distribution_Diameter = np.histogram(Diameter, bins=12)
 fig1, ax1 = plt.subplots()
@@ -117,8 +118,8 @@ print("Average Circle diameter (in pixel): ",mean_Diameter)
 
 # Enter scale of the image manually if you want to get diameter in micrometere
 # in this example 86 pixel is equal to 3 micrometer
-pixel_for_scale = 84;
-scale_given = 3;        # in micrometer
+pixel_for_scale = 84
+scale_given = 3        # in micrometer
 print("Average Circle diameter (in micrometer): ",
       scale_given*mean_Diameter/pixel_for_scale)
 
@@ -136,8 +137,8 @@ plt.title('Distribution of gray value in image')
 (thresh, img_bw) = cv2.threshold(img_gray, 60, 255, cv2.THRESH_BINARY)
 s1 = np.concatenate(img_bw)
 hist2, bw_data = np.histogram(s1, bins=2)
-circle_white = hist2[1];
-no_circle_black = hist2[0];
+circle_white = hist2[1]
+no_circle_black = hist2[0]
 # The percentage of the image that is covered with the spheres
 circle_percentage = circle_white/(circle_white+no_circle_black)*100 
 print("The percentage of the image that is covered with the spheres (in %): ",
@@ -155,7 +156,7 @@ plt.title('Distribution of Black and white color in image')
 
 
 ## Distinguish whether the image is 'good' or 'bad'
-packing_density = circle_percentage;
+packing_density = circle_percentage
 if packing_density<70:
     print("This image is Bad")
 else:
@@ -170,8 +171,8 @@ for i in range(count_1):
         c2 = Circle_coordinates[j,:]
         dist[i,j] = distance.euclidean(c1, c2)
         
-dist2 = np.array(dist);
-dist2[dist2 > 1.5*mean_Diameter] = 0;
+dist2 = np.array(dist)
+dist2[dist2 > 1.5*mean_Diameter] = 0
 cd1 = np.zeros((count_1,1))
 for i2 in range(count_1):
     a1 = dist2[i2,:]
@@ -204,11 +205,11 @@ if packing_density<70:
     contours, hierarchy = cv2.findContours(image = img_bw,
                                            mode = cv2.RETR_TREE,method = cv2.CHAIN_APPROX_SIMPLE)
     
-    Area_threshold = 0.10*3.14/4*mean_Diameter*mean_Diameter;
+    Area_threshold = 0.10*3.14/4*mean_Diameter*mean_Diameter
     
     a4 = np.zeros(len(contours))
     
-    contours1=[];
+    contours1=[]
      
     for i4 in range(len(contours)):
         a4[i4] = np.shape(contours[i4])[0]
@@ -234,8 +235,8 @@ if packing_density<70:
     
     
 ## Counts how many times there are double layers (a sphere above the base layer) 
-count_dl = 0;
-index_dl = 0;
+count_dl = 0
+index_dl = 0
 img_rgb3 = np.copy(img_rgb)
 for i3 in range(len(cd1)):
     if cd1[i3,]>0:
@@ -243,8 +244,8 @@ for i3 in range(len(cd1)):
         # if cd1[i3,]<0.95*mean_ss:
         if cd1[i3,]<int(mean_Diameter):
             count_dl = count_dl + 1
-            x = int(circles[0,i3,0]);
-            y = int(circles[0,i3,1]);
+            x = int(circles[0,i3,0])
+            y = int(circles[0,i3,1])
             cv2.circle(img_rgb3, (x, y), 2, (0, 255, 255), 5)
             # print(i3)
             

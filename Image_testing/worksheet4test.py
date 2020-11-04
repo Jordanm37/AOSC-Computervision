@@ -60,7 +60,7 @@ def get_grid(image, numY, numX):
     '''
     #import pdb; pdb.set_trace()
     Y, X = image.shape
-    Ylen = int(Y / numY) #extra size +1 drops off if present becasue of integer division
+    Ylen = int(Y / numY) #extra size +1 drops off if present because of integer division
     Xlen = int(X / numX) # ""
 
     wins = []
@@ -70,8 +70,9 @@ def get_grid(image, numY, numX):
             row.append(image[(i * Ylen): (((i + 1) * Ylen)),
                             (j * Xlen): (((j + 1) * Xlen))])
         wins.append(row)
+        #print(f' shape of wins { len(wins) } ')
 
-    return wins
+    return np.array( wins )
 
 
 # Task 2.a
@@ -130,17 +131,17 @@ def get_SearchArea(image, loc, winSize, winNo):
     size depending on winsize and winNo. Where winsize
     is the size of a specified image window
     winNo is the number of windows for the search area
-    dimnesion to be given by. eg. winNo= > search area 
+    dimnesion to be given by. eg. winNo= 3> search area 
     dimension is 3x3 image windows in size.
     This reurns larger or smaller images(search area windows)
     '''
     Y, X = image.shape
 
-    Ylen = int(winSize[0] * 2.5)
-    Xlen = int(winSize[1] * 2.5)
+    # Ylen = int(winSize[0] * 2.5)
+    # Xlen = int(winSize[1] * 2.5)
 
-    # Ylen = int(winSize[0] * winNo / 2)
-    # Xlen = int(winSize[1] * winNo / 2)
+    Ylen = int(winSize[0] * winNo / 2)
+    Xlen = int(winSize[1] * winNo / 2)
 
     Ymin = loc[0] - Ylen
     Ymax = loc[0] + Ylen
@@ -219,9 +220,15 @@ def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     '''
     WinCenOrg = [ygrid, xgrid]
     nny, nnx = template.shape
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
     corr = signal.correlate2d(template, pattern, boundary='symm', mode='same')
+
+    # for first in range(n_signals):
+    # for second in range(first + 1, n_signals):
+    #     corr = numpy.correlate(data[first], data[second], mode='full')
+    #     max_corr[first, second] = numpy.max(corr)
+
     dpy, dpx = np.unravel_index(np.argmax(corr), corr.shape)
     dpy = dpy - (nny / 2)
     dpx = dpx - (nnx / 2)
@@ -332,10 +339,14 @@ def ProcessImages2(filepath):
     dpy = np.zeros((leny, lenx))
     dpx = np.zeros((leny, lenx))
 
-    print(f' size of length {len(wins)} ')
+
+
+    #print(f' size of length {len(wins)} ')
+    print(f' shape of pattern {pattern.shape} ')
+    print(f' shape of wins {wins.shape} ')
     print(f' length of first wins elements {lenx,leny} ')
     print(f' size of change dpx dpy {dpx,dpy} ')
-
+ 
 
     distmap = []
 
@@ -350,14 +361,15 @@ def ProcessImages2(filepath):
             TempWin = wins[i][j]
 
             TempWinCen = [int((i*leny)+(leny/2)), int((j*lenx)+(lenx/2))]
-            SearchWin = get_SearchArea(template, TempWinCen, [leny, lenx], nn)
+            SearchWin = get_SearchArea(template, TempWinCen, [leny, lenx], 3)
             if not len(SearchWin) > 1:
                 continue
             y, x = get_CrossCorrelation(
                 TempWin, SearchWin, [leny, lenx], TempWinCen[0], TempWinCen[1])
             dpy[i][j] = abs(y)
             dpx[i][j] = abs(x)
-            import pdb; pdb.set_trace() 
+        #import pdb; pdb.set_trace() 
+
 
     print(dpy, dpx)
     return[dpy, dpx]
@@ -381,7 +393,7 @@ def main():
         dpy, dpx = ProcessImages2(
         #    'C:\\Users\\Jordan\\Documents\\GitHub\\AOSC-Computervision\\Image_testing\\')
               '.\\')            
-    plt.imshow(dpy, cmap='gray')
+    plt.imshow(dpy, cmap='Blues')
     plt.show()
 
 
