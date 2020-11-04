@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Oct 20 09:05:04 2020
-Last Updated on 23 Oct 20
-Combine Trial 1
-"""
 
 # importing necessary libraries
 import cv2
@@ -11,11 +6,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.spatial import distance
 
+DEBUG = False
+
 '''
 Image reading and preprocessing
 '''
-img_orig = cv2.imread(r'C:\\Users\Jordan\\Documents\\\AOSC-Computervision\\Part_3\\2.png')
+img_orig = cv2.imread(r'2.PNG')
 img_bgr = img_orig
+if DEBUG: print(img_bgr.shape)
 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 # Applies the bilateral filter to an image to reduce unwanted noise 
 img_filter = cv2.bilateralFilter(img_rgb, d = 9, sigmaSpace = 75, sigmaColor =75)
@@ -28,28 +26,36 @@ kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
 img_gray2 = cv2.filter2D(img_gray, -1, kernel_sharpening)
 img_gray3 = cv2.medianBlur(img_gray,1)  # Blurs an image using the median filter.
 
-# To import temlplate as it is required to count circle by CCORR_NORMED method
+# To import template as it is required to count circle by CCORR_NORMED method
 # and applying same precessing 
-imr_template = cv2.imread(r'C:\\Users\Jordan\\Documents\\\AOSC-Computervision\\Part_3\\2_T4.PNG')
+imr_template = cv2.imread(r'2_T4.PNG')
 img_bgr_t = imr_template
-img_rgb_t = cv2.cvtColor(img_bgr_t, cv2.COLOR_BGR2RGB)
-img_blur_t = cv2.bilateralFilter(img_rgb_t, d = 9, sigmaSpace = 75, sigmaColor =75)
-img_gray_t = cv2.cvtColor(img_rgb_t, cv2.COLOR_RGB2GRAY)
+img_rgb_t = cv2.cvtColor(img_bgr_t, cv2.COLOR_BGR2RGB) ###/QUESTION:why this colour convert?
+img_blur_t = cv2.bilateralFilter(img_rgb_t, d = 9, sigmaSpace = 75, sigmaColor =75) ##/QUESTION: why bilateral filter?
+img_gray_t = cv2.cvtColor(img_rgb_t, cv2.COLOR_RGB2GRAY) ###/QUESTION:what are the differnt variables?
 img_gray_t1 = cv2.cvtColor(img_blur_t, cv2.COLOR_RGB2GRAY)
 img_gray_t2 = cv2.filter2D(img_gray_t, -1, kernel_sharpening)
 
-## Method 1 of CCORR_NORMED to count circles
+
+
+'''
+First method to find location of circles using cross correlation with a template
+
+'''
+## Method 1 of CCORR_NORMED to count circles - use Normed cross corelation to find overlap with template
 
 res = cv2.matchTemplate(img_gray2,img_gray_t2,cv2.TM_CCORR_NORMED)
 
 # This parameter (0.5-0.95) should be set by trial and error method after visualizing 
 threshold_1 = 0.65   
-loc = np.where( res >= threshold_1)
+loc = np.where( res >= threshold_1) #returns array of all res 
+#which is the template search of image that are above threshold cross correlation value
+
 pt_p = (0,0)
-c = np.asarray(pt_p)
+c = np.asarray(pt_p) #convert to array. IS there a betterway?
 c = c.reshape(1,len(c))
 w, h = img_gray_t2.shape[::-1]
-n = 0
+n = 0 ###/QUESTION:what is this n?
 
 # To count number of circle
 for pt in zip(*loc[::-1]):
@@ -59,23 +65,26 @@ for pt in zip(*loc[::-1]):
     c = np.append(c,c1,axis = 0)    
     n = n+1  
    
-c = np.delete(c, 0, 0)  # first zero for first row and second zero for axis=0 (row)
+   ##/QUESTION: why is the next line needed?
+c = np.delete(c, 0, 0)  # first zero for first row and second zero for axis=0 (row) 
 
 # To avoid detection of same circle many times
 for i in range(n):
     pt_p = c[i,]
-    for j in range(i+1,n):
+    for j in range(i+1,n): ##/QUESTION: why i+1?//
         pt = c[j,]
         d = distance.euclidean(pt_p, pt)
         if d < w/1.5:
             c[j,] = 0
-            
-c2 = c[~(c==0).all(1)]
+
+##QUESTION: what is this for?            
+c2 = c[~(c==0).all(1)] ##QUESTION: explain?
 img_rgb1 = np.copy(img_rgb)
+
 
 # To print and display detected circles
 for l in range(len(c2)):
-    cv2.circle(img_rgb1, (int(round(c2[l,0] + w/2)), int(round(c2[l,1] + h/2))), 1, (0,255,255), 5)
+    cv2.circle(img_rgb1, (int(round(c2[l,0] + w/2)), int(round(c2[l,1] + h/2))), 1, (0,255,255), 5) ###/QUESTION:explain?
 print("Circle count by CCORR_NORMED method : ",len(c2))            
 plt.figure()
 plt.subplot(121),plt.imshow(img_orig)
@@ -83,13 +92,20 @@ plt.title('Original Image'), plt.xticks([]), plt.yticks([])
 plt.subplot(122),plt.imshow(img_rgb1)
 plt.title('Output Image by CCORR_NORMED'), plt.xticks([]), plt.yticks([])
 
+'''
+Using another method, hough circles that is better than cross corelation because takes a measure of a circles in the pixel 
+and determiens the circles in the images based on geometry and intensity gradients of the pixels not pattern matching 
 
+'''
 ## Method 2 of Hough circle method to count circles
 # minDist, param1 and param2 must be refined by trial and error
+
+###QUESTION: what kind of trial and error determine param1 and param2? Radius also?
+
 circles = cv2.HoughCircles(img_gray3, cv2.HOUGH_GRADIENT, dp = 1, minDist = 10,
                           param1=100, param2=15, minRadius=0, maxRadius=18)
-detected_circles = np.uint16(np.around(circles))
-img_rgb2 = np.copy(img_rgb)
+detected_circles = np.uint16(np.around(circles)) ###QUESTION: why unit16?
+img_rgb2 = np.copy(img_rgb) ###QUESTION: why need to copy imag?
 # To display detected circles
 for (x, y ,r) in detected_circles[0, :]:
     # cv2.circle(img_rgb, (x, y), r, (0, 255, 0), 1)
@@ -179,8 +195,9 @@ for i2 in range(count_1):
     a2 = a1[a1>0]
     cd1[i2,:] =  np.mean(a2)
 
-cd = cd1[~np.isnan(cd1)]
-cd1 = np.nan_to_num(cd1)
+###QUESTION: Hows does cd give the centre distances?
+cd = cd1[~np.isnan(cd1)] ###QUESTION: what would cause cd1 to be Nan? 
+cd1 = np.nan_to_num(cd1) ###QUESTION: what is the logic for cd1 to flag double layers?
 hist3, ss_dist = np.histogram(cd, bins = 12)    
 fig3, ax3 = plt.subplots()
 ax3.hist(cd, ss_dist, cumulative=False)
@@ -194,8 +211,8 @@ print("Average Sphere Seperation (in micrometer): ",
       scale_given*mean_ss/pixel_for_scale)
 
 ## The reflection, R, for a surface in an image
-R = np.square((((0.793*(mean_Diameter/mean_ss)**(2))+1)**(3/2)-(1.52))/
-              (((0.793*(mean_Diameter/mean_ss)**(2))+1)**(3/2)+(1.52)))
+R = np.square((((0.793*(mean_Diameter/mean_ss)**(2))+1)**(3/2)-(2.4))/
+              (((0.793*(mean_Diameter/mean_ss)**(2))+1)**(3/2)+(2.4)))
 
 print("The Reflection R (in %): ",R)
 
@@ -252,6 +269,7 @@ for i3 in range(len(cd1)):
 plt.figure()
 plt.imshow(img_rgb3,cmap = "gray")
 plt.title('Double layer in the image')
+plt.show()
 
 print("Count of double layer : ",count_dl)
 ## Characterise images by size of grains - number of hexagon groups, or triangular groups.
