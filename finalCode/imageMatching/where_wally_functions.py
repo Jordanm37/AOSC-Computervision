@@ -4,19 +4,10 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
 def convert_gray(image):
-    height = image.shape[0]
-    width = image.shape[1]
-    r = 0.299
-    g = 0.587
-    b = 0.114
-    grey = np.zeros((image.shape[0],image.shape[1]))
 
-    for i in range(height): 
-        for j in range(width): 
-            grey[i][j] = (r*image[i][j][0] + g*image[i][j][1] + b*image[i][j][2])/3  
+    image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]
     
-    return grey
-    #return image[:,:,0:3].mean(axis=2)
+    return image
 
 
 def calculate_energy( pattern, template, offset_x, offset_y ):
@@ -144,8 +135,6 @@ def n_corr2d( pattern, template):
     norm_scores =  np.zeros( ( side_edge ,  bottom_edge ) )
     #test = [0] * ( len( template ) - len( pattern ) )
     
-
-
     for i in range( scores.shape[0] ):
         #t_start = time.time()
         for j in range( scores.shape[1] ):
@@ -183,8 +172,8 @@ def find_offset(pattern, template):
     norm_corr = n_corr2d( pattern, template)
 
     #Plot array of cross correlation
-    plt.figure()
-    plt.plot(norm_corr)
+    # plt.figure()
+    # plt.plot(norm_corr)
 
     #best_score, best_match = find_best_match( scores )
     best_match , match_value = find_best_match( norm_corr )

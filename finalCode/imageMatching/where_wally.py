@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
 import time
@@ -13,36 +12,72 @@ def main():
     patternDir = "wallypuzzle_rocket_man.png"
     templateDir = "wallypuzzle_png.png"
 
-    image_mean_1 = convert_gray( read_image( patternDir ) )
-    image_mean_2 = convert_gray( read_image( templateDir ) )
+    #gray 1
+    pattern = read_image( patternDir )
+    template = read_image( templateDir )
 
+    pattern_gray = convert_gray( pattern )
+    template_gray = convert_gray( template ) )
 
-    print(pattern_image)
-    
-    # read average of image. Finish by converting to greyscale 
-
+    #mean shift
+    pattern_ms = pattern_gray - np.mean(pattern_gray)
+    template_ms = template_gray - np.mean(template_gray)
+    # print(pattern_image)
     # Find position of max ccr value, where the pattern image is found in
     # template
-    image_cross, image_cross_value = find_offset( image_mean_1, image_mean_2 )
-    
+    start = time.time()
+    image_cross, image_cross_value = find_offset( pattern_ms, template_ms )
     end = time.time()
     
-    print( "Offset_x = ", image_cross[0], "Offset_y = ", image_cross[1], "Cross value = ", image_cross_value, "run time = ", end - start  )
-
-    plt.ion()
-
-    # test_plot = template_image[ image_cross[0] : image_cross[0] + pattern_image.shape[0],  image_cross[1] : image_cross[1] + pattern_image.shape[1], : ]  
-    # plt.imshow( test_plot )
-
-    #Histogram of colour intensities
-    lum_img_1 = image_mean_1[:, :,0]
-    lum_img_2 = image_mean_2[:, :,0]
-    plt.figure()
-    plt.subplot(211)  
+    # Intesity histogram plot
+    lum_img_1 = pattern_ms[:, :]
+    lum_img_2 = template_ms[:, :]
+    #plots of priginal and greyscale
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(2,2,1)
+    plt.imshow(pattern)
+    plt.subplot(2,2,2)
+    plt.imshow(template)
+    plt.subplot(2,2,3)
+    plt.imshow(pattern_ms)
+    plt.subplot(2,2,4)
+    plt.imshow(template_ms)
+    #plot of intensity
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)
+    plt.imshow(pattern_ms)
+    plt.subplot(1,2,2)
+    plt.imshow(template_ms)
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)  
     plt.hist(lum_img_1.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
-    plt.subplot(212)  
+    plt.title("Pixel intensity of pattern")
+    plt.subplot(1,2,2)  
     plt.hist(lum_img_2.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+    plt.title("Pixel intensity of template")
     plt.show()
+
+
+    #function to find image centre
+    vertCen = pattern_gray.shape[1]/2
+    horCen = pattern_gray.shape[0]/2
+
+    #plot mark where pattern is found
+     plt.imshow( template )  
+    circle=plt.Circle(( image_cross[1] + vertCen ,\
+    image_cross[0] + horCen  ),\
+    50,facecolor='red', edgecolor='blue',linestyle='dotted', \
+    linewidth='2.2')
+    plt.gca().add_patch(circle)  
+    plt.show()    
+    plt.ion()    
+
+    #centre of pattern
+    print("Offset_x_co = ", image_cross[1] + horCen , "Offset_y_co = ", image_cross[0] + vertCen, "value =", image_cross_value)
+    #top left corner of pattern image
+    print("Offset_x_co = ", image_cross[1] , "Offset_y_co = ", image_cross[0] , "value =", image_cross_value)
+    print("run time = ", end - start )
+
 
 if __name__ == '__main__':
     
@@ -52,21 +87,8 @@ if __name__ == '__main__':
 
 
 """
-Offset_x =  528 Offset_y =  982 value = 0.520092887633342
+Offset_y =  528 Offset_x =  982 value = 0.520092887633342
 <class 'numpy.ndarray'>
+Offset_y =  529 Offset_x =  983 Cross value =  0.3724158963277624 run time =  167.4924819469452
 """
-
-
-"""
-
-TO put a red cross once found
-
-ax1.annotate("New, previously unseen!", (160, -35), xytext=(10, 15),
-             textcoords="offset points", color='red', size='x-small',
-             arrowprops=dict(width=0.5, headwidth=3, headlength=4,
-                             fc='k', shrink=0.1));
-
-"""
-
-
 

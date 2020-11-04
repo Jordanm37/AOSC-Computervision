@@ -2,11 +2,12 @@ import matplotlib.image as mpimg
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from itertools import islice
 
 def convert_gray(image):
+
+    image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]
     
-    return image[:,:,0:3].mean(axis=2)
+    return image
 
 def read_image(image_name):
     """
@@ -153,13 +154,13 @@ def zero_padding(C, x_pad, y_pad):
     return np.pad(C, [(x_pad, ), (y_pad, )], mode='constant')
 
 
-# def nextpow2(n):
+def nextpow2(n):
 
-#     """get the next power of 2 that's greater than n"""
-#     m_f = np.log2(n)
-#     m_i = np.ceil(m_f)
+    """get the next power of 2 that's greater than n"""
+    m_f = np.log2(n)
+    m_i = np.ceil(m_f)
 
-#     return 2**m_i
+    return 2**m_i
 
 
 def crr_2d( pattern, template):
@@ -176,83 +177,6 @@ def crr_2d( pattern, template):
     ----------------
         real_corr  Cross correlation array
      """  
-
-    # '''New padding'''
-#     a = pattern
-#     b= template
-
-
-
-#     if a.shape[0]%2!=0:
-#         w = a.shape[1]
-#         h = a.shape[0]
-#         a= np.ones( (h+1,w))
-
-#     if a.shape[1]%2!=0:
-#         w = a.shape[1]
-#         h = a.shape[0]
-#         a= np.ones( (h,w+1))
-
-#     if b.shape[0]%2!=0:
-#         w = b.shape[1]
-#         h = b.shape[0]
-#         b= np.ones( (h+1,w))
-
-#     if b.shape[1]%2!=0:
-#         w = b.shape[1]
-#         h = b.shape[0]
-#         b= np.ones( (h,w+1))
-
-#     min_height_pad = max(a.shape[0], b.shape[0])
-#     min_width_pad = max(a.shape[1], b.shape[1]) 
-#     # find closes power of 2 for height and width (np.fft runs faster) 
-#     optimal_width = nextpow2(2*min_width_pad) 
-#     optimal_height = nextpow2(2*min_height_pad) 
-
-#     print("min and optimal ")
-#     print(min_height_pad, min_width_pad) 
-#     print(optimal_width, optimal_height)
-
-
-#     height_pad_p = optimal_height - a.shape[0]
-#     width_pad_p = optimal_width - a.shape[1]
-#     height_pad_t = optimal_height - b.shape[0] 
-#     width_pad_t = optimal_width - b.shape[1] 
-
-# #     a_padded = zero_padding( a, height_pad_p /2, width_pad_p /2 ) 
-# #     b_padded = zero_padding( b, height_pad_t /2, width_pad_t /2 )
-
-#     # pad pattern as centre of array with zeros
-#     pattern_padded = zero_padding( a, height_pad_p /2, width_pad_p /2 ) 
-#     template_padded = zero_padding( b, height_pad_t /2, width_pad_t /2  )
-
-
-    # '''New padding'''
-    # # get minimum width/height to pad for np.fft 
-    # min_width_pad = max( pattern.shape[1], template.shape[1]) 
-    # min_height_pad = max(pattern.shape[0], template.shape[0])
-    # # find closes power of 2 for height and width (np.fft runs faster) 
-    # optimal_width = nextpow2(min_width_pad) 
-    # optimal_height = nextpow2(min_height_pad) 
-
-    # # move into zero padding function
-    # width_pad_p = optimal_width - pattern.shape[0] 
-    # height_pad_p = optimal_height - pattern.shape[1]
-
-    # width_pad_t = optimal_width - template.shape[0] 
-    # height_pad_t = optimal_height - template.shape[1] 
-
-    # # pad pattern as centre of array with zeros
-    # pattern_padded = zero_padding( pattern, width_pad_p /2, height_pad_p /2 ) 
-    # template_padded = zero_padding( template, width_pad_t /2, height_pad_t /2 )
-
-    # template_fft = matrix_fft(template) #(a)
-    # pattern_fft_conj = matrix_complex_conj( matrix_fft(pattern_padded) ) # (b)
-
-    # # a * b
-    # #Offset pattern due to padding
-    # product = pattern_fft_conj[0: pattern_fft_conj.shape [0], 0: pattern_fft_conj.shape [1]] *  template   
-
     '''Old padding'''
     side_edge_pad = template.shape[0] - pattern.shape[0] # move into zero padding function
     bottom_edge_pad = template.shape[1] - pattern.shape[1]
@@ -270,7 +194,6 @@ def crr_2d( pattern, template):
     
     real_corr = np.real(ccr) #np.real
 
-    # return real_corr, height_pad_t, width_pad_t
     return real_corr
 
 
@@ -298,45 +221,26 @@ def find_offset(pattern, template):
     a = pattern
     b = template
     if a.shape[0]%2!=0:
-    #     w = a.shape[1]
-    #     h = a.shape[0]
-    #     #a= np.ones( (h+1,w))
-    #     a1 = np.zeros((h+1,w))
-    #     #a[:-1,:] = pattern_gray
         extra_row = 1
         a = np.vstack((a,np.zeros( (1,a.shape[1])  )))
 
     if a.shape[1]%2!=0:
-    #     w = a.shape[1]
-    #     h = a.shape[0]
-    #     #a= np.ones( (h,w+1))
-    #     a1 = np.zeros((h,w+1))
         extra_col = 1
         a = np.hstack((a,np.zeros( (a.shape[0],1) )))
 
     if b.shape[0]%2!=0:
-    #     w = b.shape[1]
-    #     h = b.shape[0]
-    #     #b= np.ones( (h+1,w))
-    #     b1 = np.zeros((h+1,w))
         b = np.vstack((b,np.zeros( (1,b.shape[1]) )))
         
     if b.shape[1]%2!=0:
-    #     w = b.shape[1]
-    #     h = b.shape[0]
-    #     #b= np.ones( (h,w+1))
-    #     b1 = np.zeros((h,w+1))
         b = np.hstack((b,np.zeros( (b.shape[0],1) )))
 
     pattern = a
     template = b
 
-    #new adding
-    #real_corr, off_x, off_y = crr_2d( pattern, template)
     real_corr = crr_2d( pattern, template) 
 
     best_match , match_value = find_best_match( real_corr )
-    #print( best_match )
+
 
     return (best_match[0] - 2 * pattern.shape[0] - extra_row, best_match[1] - 2 * pattern.shape[1] - extra_col), match_value
-    #return (best_match[0] - off_x/2, best_match[1] - off_y/2), match_value
+

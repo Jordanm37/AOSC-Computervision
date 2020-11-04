@@ -1,7 +1,6 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from itertools import islice
 import matplotlib.image as mpimg 
 from where_wally_FT_functions import *
 
@@ -40,14 +39,12 @@ def main():
     plt.show()    
     plt.ion()    
 
+    #centre of pattern
     print("Offset_x_co = ", image_cross[1] + horCen , "Offset_y_co = ", image_cross[0] + vertCen, "value =", image_cross_value)
+    #top left corner of pattern image
     print("Offset_x_co = ", image_cross[1] , "Offset_y_co = ", image_cross[0] , "value =", image_cross_value)
     print("run time = ", end - start )
 
-    # pattern_image = read_image( patternDir )
-    # template_image = read_image( templateDir ) 
-    # test_plot = template_image[ image_cross[0] : image_cross[0] + pattern_image.shape[0],  image_cross[1] : image_cross[1] + pattern_image.shape[1], : ] 
-    # plt.imshow( test_plot )
 
 if __name__ == '__main__':
     
