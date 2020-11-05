@@ -63,7 +63,7 @@ def main():
     horCen = pattern_gray.shape[0]/2
 
     #plot mark where pattern is found
-     plt.imshow( template )  
+    plt.imshow( template )  
     circle=plt.Circle(( image_cross[1] + vertCen ,\
     image_cross[0] + horCen  ),\
     50,facecolor='red', edgecolor='blue',linestyle='dotted', \
