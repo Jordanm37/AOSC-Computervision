@@ -17,17 +17,17 @@ def calculate_energy( pattern, template, offset_x, offset_y ):
  
     Inputs:
     ----------------
-        p   must be non empty and sum-square of its elements precalculated and passed
+        p          list   must be non empty and sum-square of its elements precalculated and passed
 
-        t   similar dimensionality to pattern
+        t          list   similar dimensionality to pattern
 
-        offset_x  position in the template/search array along rows
+        offset_x   int    position in the template/search array along rows
 
-        offset_y  position in the template/search array along columns
+        offset_y   int    position in the template/search array along columns
         
     Output:
     ----------------
-        norm  Scalar float of variance for a given an array slice of the template/search and pattern
+        norm       list   Scalar float of variance for a given an array slice of the template/search and pattern
      """    
     g_slice = template[ offset_x : offset_x +pattern.shape[0],  offset_y : offset_y + pattern.shape[1]] 
     norm = np.sqrt( ( pattern**2 ).sum() * ( g_slice**2).sum() ) 

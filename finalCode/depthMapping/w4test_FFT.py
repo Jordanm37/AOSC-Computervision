@@ -4,7 +4,7 @@ import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
 import time
-from where_wally_FT_functions import *
+from FT_functions import *
 
 
 # Task 1
@@ -381,7 +381,7 @@ def ProcessImages2(filepath):
 
             #SearchWin = get_SearchArea_Horizontal( template, TempWinCen, len_list, 3)
             SearchWin = get_SearchArea(template, TempWinCen, len_list, 3 )
-            
+            #call difeerent strategies here
             if not len(SearchWin) > 1:
                 continue
 
