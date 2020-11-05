@@ -191,7 +191,7 @@ def remove_repeated(pattern,len, Fs, label):
 
 
 
-def low_pass(pattern, Fs, len, label, freq ):
+def low_pass(pattern, Fs, length, label, freq , DISPLAY):
     """
     Apply low pass filter to remove low frequency noise 
  
@@ -215,12 +215,13 @@ def low_pass(pattern, Fs, len, label, freq ):
 
     p = mean_dif(pattern)
 
-    N = int(len / 2)
+    N = int(length / 2)
     b = signal.firwin(150, [1000, 2000], fs = Fs, pass_zero=False)
     y = signal.lfilter(b, 1, p)
     Y = arr_fft(y)
     Pf = np.abs(Y[:N])
-    plt.figure()
-    plt.plot(freq, Pf)
-    plt.title(label)
-    plt.show()
+    if DISPLAY:
+        plt.figure()
+        plt.plot(freq, Pf)
+        plt.title(label)
+        plt.show()      
