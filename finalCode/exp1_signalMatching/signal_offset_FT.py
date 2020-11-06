@@ -26,8 +26,8 @@ def main():
     # print(corr, '\n')
     # print(offset, '\n')
     #remove mirrored frequency data
-    fft_half_1 = remove_repeated(data_1,len_d_1, Fs, "Signal_1")
-    fft_half_2 = remove_repeated(data_2,len_d_2, Fs, "Signal_2")
+    fft_half_1 = remove_repeated(data_1,len_d_1, Fs, "Signal_1_half")
+    fft_half_2 = remove_repeated(data_2,len_d_2, Fs, "Signal_2_half")
     # LPF
     low_pass(data_1, Fs, len_d_1, "Signal_1_lpf", fft_half_1, True )
     low_pass(data_2, Fs, len_d_2, "Signal_2_lpf", fft_half_2, True )
@@ -44,18 +44,20 @@ def main():
 
 
     #plotting
-    plt.figure()
-    plt.subplot(311)  
-    plt.plot(data_1)
-    plt.title("Signal_1_raw")
-    plt.subplot(312)  
-    plt.plot(data_2)
-    plt.title("Signal_2_raw")
-    plt.subplot(313)  
-    plt.plot(lags[0:npts+1], corr_sig_1_2)
-    plt.ylabel('cross-correlation')
-    plt.xlabel('lag of Sensor-1 relative to Sensor-2')
-    plt.show()   
+    # plt.figure()
+    # fig = plt.figure(figsize=(10, 4))
+    # # plt.subplot(311)  
+    # plt.plot(data_1)
+    # plt.title("Signal_1_raw")
+    # # plt.subplot(312)  
+    # plt.plot(data_2)
+    # plt.title("Signal_2_raw")
+    # plt.subplot(313)  
+    visualise_ccr(lags[0:npts+1],corr_sig_1_2, "FT_ccr")
+    # plt.plot(lags[0:npts+1], corr_sig_1_2)
+    # plt.ylabel('cross-correlation')
+    # plt.xlabel('lag of Sensor-1 relative to Sensor-2')
+    # plt.show()   
 
 if __name__ == '__main__':
     

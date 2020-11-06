@@ -156,7 +156,7 @@ def find_best_lag(data_1, data_2,lags):
     return maxlag, corr_sig_1_2, t_total
 
 
-def remove_repeated(pattern,len, Fs, label):
+def remove_repeated(pattern,length, Fs, label):
     """
     Using Hermiticty of FT of real array, cut off mirrored frequencies and 
  
@@ -177,8 +177,8 @@ def remove_repeated(pattern,len, Fs, label):
      """  
     p = mean_dif(pattern)
     p_fft = arr_fft(p)
-    N = int(len / 2)
-    f_res = Fs / len
+    N = int(length / 2)
+    f_res = Fs / length
     P = np.abs(p_fft[:N])
     freq = np.arange(0, Fs / 2 - f_res, f_res)
 
@@ -188,7 +188,7 @@ def remove_repeated(pattern,len, Fs, label):
     plt.title(label)
     
     plt.tight_layout()
-    plt.savefig('fig/{label}',dpi = 250)
+    plt.savefig(f'fig_{label}.png',dpi = 250)
     plt.show()
 
 
@@ -232,6 +232,23 @@ def low_pass(pattern, Fs, length, label, freq , DISPLAY):
         plt.title(label)
 
         plt.tight_layout()
-        plt.savefig('fig/{label}',dpi = 250)
+        plt.savefig(f'fig_{label}.png',dpi = 250)
         plt.show()
-            
+
+def visualise_ccr(lags,n_ccor, label):
+    fig = plt.figure(figsize=(10, 4))
+    scale = np.amax(n_ccor)
+    plt.plot(lags, n_ccor)
+    plt.ylim(-1.1*scale, scale*1.1)
+    plt.axhline(y=0, color ='r')
+    plt.ylabel('cross-correlation')
+    plt.xlabel('lag of Sensor-1 relative to Sensor-2')
+    plt.title(label)
+    plt.grid()
+    plot_save(label)
+    plt.show()
+
+def plot_save(label):
+    plt.tight_layout()
+    plt.savefig(f'fig_{label}.png',dpi = 250)
+    

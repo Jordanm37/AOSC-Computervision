@@ -290,30 +290,63 @@ def read_file( fileName ):
     return data_list
 
 def visualise_signals(s1_Data, s2_Data):
+    # fig = plt.figure(figsize=(10, 4))
+    # SubPlotRow=1
+    # SubPlotCol=3
+    # npts = len( s1_Data )
+    # t = np.linspace(0, len(s1_Data ), npts)
+
+    # plt.subplot(SubPlotRow,SubPlotCol,1)
+    # plt.plot(t,s1_Data, color = 'red')
+    # plt.title("Sensor-1 Data Plot")
+    # plt.grid()
+
+    # plt.subplot(SubPlotRow,SubPlotCol,2)
+    # plt.plot(t,s2_Data, color = 'blue')
+    # plt.title("Sensor-2 Data Plot")
+    # plt.grid()
+
+    # plt.subplot(SubPlotRow,SubPlotCol,3)
+    # plt.plot(t,s1_Data, color = 'red')
+    # plt.plot(t,s2_Data, color = 'blue')
+    # plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
+    # plt.grid()
+    # plt.show()
+
     fig = plt.figure(figsize=(10, 4))
-    SubPlotRow=1
-    SubPlotCol=3
     npts = len( s1_Data )
     t = np.linspace(0, len(s1_Data ), npts)
 
-    plt.subplot(SubPlotRow,SubPlotCol,1)
     plt.plot(t,s1_Data, color = 'red')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
     plt.title("Sensor-1 Data Plot")
     plt.grid()
-
-    plt.subplot(SubPlotRow,SubPlotCol,2)
-    plt.plot(t,s2_Data, color = 'blue')
-    plt.title("Sensor-2 Data Plot")
-    plt.grid()
-
-    plt.subplot(SubPlotRow,SubPlotCol,3)
-    plt.plot(t,s1_Data, color = 'red')
-    plt.plot(t,s2_Data, color = 'blue')
-    plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
-    plt.grid()
+    plot_save("Sensor-1 Data Plot")
     plt.show()
 
-def visualise_ccr(lags,n_ccor):
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.plot(t,s2_Data, color = 'blue')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Sensor-2 Data Plot")
+    plt.grid()
+    plot_save("Sensor-2 Data Plot")
+    plt.show()
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.plot(t,s1_Data, color = 'red')
+    plt.plot(t,s2_Data, color = 'blue')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
+    plt.grid()
+    plot_save("Sensor-1 and Sensor-2 Combined Data Plot")
+    plt.show()
+
+
+def visualise_ccr(lags,n_ccor, label):
     fig = plt.figure(figsize=(10, 4))
     scale = np.amax(n_ccor)
     plt.plot(lags, n_ccor)
@@ -321,7 +354,9 @@ def visualise_ccr(lags,n_ccor):
     plt.axhline(y=0, color ='r')
     plt.ylabel('cross-correlation')
     plt.xlabel('lag of Sensor-1 relative to Sensor-2')
+    plt.title(label)
     plt.grid()
+    plot_save(label)
     plt.show()
 
 
@@ -333,6 +368,11 @@ def print_summary(title, NormCCR, maxlag, t_total):
 
 def init_vars(npts, add=1):
     lags = np.arange(-npts + add, npts)
-    time = time.time()
+    t_s = time.time()
     
-    return lags, time
+    return lags, t_s
+
+def plot_save(label):
+    plt.tight_layout()
+    plt.savefig(f'fig_{label}.png',dpi = 250)
+    
