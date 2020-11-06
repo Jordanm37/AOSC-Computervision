@@ -5,17 +5,10 @@ import matplotlib.pyplot as plt
 from itertools import islice
 
 
-def fewerDataPoints(data_1, data_2, counter):
+def fewerDataPoints(data_1, data_2, nth):
 #Debugging size for smaller runs 
-    t = []
-    s1_Data=[]
-    s2_Data=[]
-    for c in range(0,counter):
-        t.append(c+1) #Keep track of index position in loop
-        s1_Data.append(float(data_1[c]))
-        s2_Data.append(float(data_2[c]))
-    
-    return s1_Data,s2_Data
+
+    return data_1[::nth],data_2[::nth] 
 
 #version 2 SSD
 #Added functions to improve computation time 
@@ -200,7 +193,7 @@ def find_best_match( score ):
     return index, max_element
 
 
-def norm_cross_corr( pattern, template, debug = False ): #change later to signal 1 and 2 as inputs
+def norm_cross_corr( pattern, template ): #change later to signal 1 and 2 as inputs
     """
     Normed cross correlation of two 1D arrays 
  
@@ -248,7 +241,7 @@ def norm_cross_corr( pattern, template, debug = False ): #change later to signal
     return norm_scores
 
 
-def find_offset( sig1, sig2, debug ): 
+def find_offset( sig1, sig2 ): 
     """
     1D array offset index and value from  cross correlation 
  
@@ -260,7 +253,7 @@ def find_offset( sig1, sig2, debug ):
     ----------------
         (best_score, best_match)  Index of offset found from cross correlation
      """     
-    correlation_arr = norm_cross_corr( sig1, sig2, debug )  
+    correlation_arr = norm_cross_corr( sig1, sig2 )  
 
     idx, maxval = find_best_match( correlation_arr ) #clean this up
     #print( best_match )
@@ -331,3 +324,15 @@ def visualise_ccr(lags,n_ccor):
     plt.grid()
     plt.show()
 
+
+def print_summary(title, NormCCR, maxlag, t_total):
+    print(title)
+    print("Normalized Cross Correlation = %.3f"%NormCCR)
+    print("\nmax correlation is at lag %d" %maxlag)
+    print( "\nRun time = %.2f"%t_total )
+
+def init_vars(npts, add=1):
+    lags = np.arange(-npts + add, npts)
+    time = time.time()
+    
+    return lags, time

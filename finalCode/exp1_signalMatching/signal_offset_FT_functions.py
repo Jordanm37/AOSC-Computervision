@@ -184,8 +184,13 @@ def remove_repeated(pattern,len, Fs, label):
 
     plt.figure()
     plt.plot(freq, P)
+    plt.xlabel("frequency (Hz)")
     plt.title(label)
+    
+    plt.tight_layout()
+    plt.savefig('fig/{label}',dpi = 250)
     plt.show()
+
 
     return freq
 
@@ -223,5 +228,10 @@ def low_pass(pattern, Fs, length, label, freq , DISPLAY):
     if DISPLAY:
         plt.figure()
         plt.plot(freq, Pf)
+        plt.xlabel("frequency (Hz)")
         plt.title(label)
-        plt.show()      
+
+        plt.tight_layout()
+        plt.savefig('fig/{label}',dpi = 250)
+        plt.show()
+            
