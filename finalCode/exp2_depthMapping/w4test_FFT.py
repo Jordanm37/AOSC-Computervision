@@ -445,6 +445,7 @@ def main():
     plt.imshow(dpx, cmap='gray')
     plt.show()
 
+    
 
 if __name__ == '__main__':
 

@@ -31,9 +31,17 @@ def calculate_energy( pattern, template, offset_x, offset_y ):
      """    
     g_slice = template[ offset_x : offset_x +pattern.shape[0],  offset_y : offset_y + pattern.shape[1]] 
     norm = np.sqrt( ( pattern**2 ).sum() * ( g_slice**2).sum() ) 
+
+    # g_slice_squared = g_slice ** 2
+    # # b = a.sum()
+    # g_slice_sq_sum = g_slice_squared.sum()
+    # product = pattern * g_slice_sq_sum
+    # #norm = np.sqrt( p * ( g_slice**2).sum() )
+    # norm = np.sqrt(product) 
+
     #Where 0 values not caught by corr function, print to see where they occur
-    if norm == 0 :
-        print ("p=", pattern, "template=", g_slice, "offset_x = ", offset_x, "offset_y = ", offset_y, "\n")
+    # if norm == 0 :
+    #     print ("p=", pattern, "template=", g_slice, "offset_x = ", offset_x, "offset_y = ", offset_y, "\n")
 
     return norm
 
@@ -135,6 +143,7 @@ def n_corr2d( pattern, template):
     norm_scores =  np.zeros( ( side_edge ,  bottom_edge ) )
     #test = [0] * ( len( template ) - len( pattern ) )
     
+    #make look like 1D
     for i in range( scores.shape[0] ):
         #t_start = time.time()
         for j in range( scores.shape[1] ):
@@ -199,3 +208,60 @@ def read_image(image_name):
     #im_array = np.array(img)
 
     return img
+
+def visualise_signals(s1_Data, s2_Data):
+    # fig = plt.figure(figsize=(10, 4))
+    # SubPlotRow=1
+    # SubPlotCol=3
+    # npts = len( s1_Data )
+    # t = np.linspace(0, len(s1_Data ), npts)
+
+    # plt.subplot(SubPlotRow,SubPlotCol,1)
+    # plt.plot(t,s1_Data, color = 'red')
+    # plt.title("Sensor-1 Data Plot")
+    # plt.grid()
+
+    # plt.subplot(SubPlotRow,SubPlotCol,2)
+    # plt.plot(t,s2_Data, color = 'blue')
+    # plt.title("Sensor-2 Data Plot")
+    # plt.grid()
+
+    # plt.subplot(SubPlotRow,SubPlotCol,3)
+    # plt.plot(t,s1_Data, color = 'red')
+    # plt.plot(t,s2_Data, color = 'blue')
+    # plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
+    # plt.grid()
+    # plt.show()
+
+    fig = plt.figure(figsize=(10, 4))
+    npts = len( s1_Data )
+    t = np.linspace(0, len(s1_Data ), npts)
+
+    plt.plot(t,s1_Data, color = 'red')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Sensor-1 Data Plot")
+    plt.grid()
+    plot_save("Sensor-1 Data Plot")
+    plt.show()
+
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.plot(t,s2_Data, color = 'blue')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Sensor-2 Data Plot")
+    plt.grid()
+    plot_save("Sensor-2 Data Plot")
+    plt.show()
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.plot(t,s1_Data, color = 'red')
+    plt.plot(t,s2_Data, color = 'blue')
+    plt.xlabel("time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
+    plt.grid()
+    plot_save("Sensor-1 and Sensor-2 Combined Data Plot")
+    plt.show()
+

@@ -1,23 +1,9 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from signal_offset_spatial_functions import *
+#from signal_offset_spatial_functions import *
+from signal_offset_spatial_functions_test import *
 
-#import cProfile
-
-
-'''
-Program structure:
-
-Read to singals.
-Select from any combination of three methods:
-A. SSD by hand
-B: Library function
-C: Handmade cross correlation
-Plot out and 
-
-
-'''
 
 Freq = 44000
 sample_period = 1 / 44100
@@ -25,9 +11,10 @@ speed_sound = 333
 
 def main():
 
-    use_SSD = True #Calculate using library functions and mean
+    use_SSD = False #Calculate using library functions and mean
     use_library = True 
-    use_convolution = True
+    use_convolution = False
+    speed_up = True
     nth = False #to pick every nth element as a sample, set nth to number > 2
     #Read signal data and summarise
     s1_Data = read_file( "sensor1Data.txt" ) 
@@ -35,9 +22,9 @@ def main():
     print("Sensor-1 Data length = %d"%len(s1_Data))
     print("Sensor-2 Data length = %d"%len(s2_Data))
     visualise_signals(s1_Data, s2_Data)
-    if nth > 0:
-        s1_Data, s1_Data = fewerDataPoints(s1_Data, s2_Data, nth)
-    npts = len( s1_Data )
+    # if nth > 0:
+    #     s1_Data, s1_Data = fewerDataPoints(s1_Data, s2_Data, nth)
+    # npts = len( s1_Data )
          
 
     #This method uses the mean and standard deviation to remove noise from the signal data
@@ -63,12 +50,12 @@ def main():
     if use_convolution:
         npts -=1 
         lags, time_start = init_vars(npts, 0)      
-        offset, NormCCR = find_offset( s1_Data, s2_Data )
+        offset, NormCCR,  = find_offset( s1_Data, s2_Data, speed_up )
         t_total = time.time() - time_start
-        maxlag = lags[np.argmax(NormCCR)]
+        maxlag = lags[-np.argmax(NormCCR)]
         #Calculate domain of lagged times
-        visualise_ccr(lags,NormCCR, "convolution" )
-        print_summary("Cross Correlation with convolution", NormCCR, maxlag, t_total)
+        visualise_ccr(lags,NormCCR[::-1], "convolution" )
+        print_summary("Cross Correlation with convolution", NormCCR[maxlag], maxlag, t_total)
 
         
     # Signal separation summary TURN INTO FUNCTION

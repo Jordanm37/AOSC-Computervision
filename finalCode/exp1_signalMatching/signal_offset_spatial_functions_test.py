@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import math
+import os
 import matplotlib.pyplot as plt
 from itertools import islice
 
@@ -85,7 +86,7 @@ def library_method(s1_Data, s2_Data):
 
 
 #Handmade
-def calculate_energy( pattern, g_slice ): 
+def calculate_energy( p, g_slice ): 
     """
     Normalisation for 1D slice of N size array of same length of pattern passed. norm= sqrt( sum(f[i]^2) * sum(g[m]^2) )
     Inputs:
@@ -94,16 +95,16 @@ def calculate_energy( pattern, g_slice ):
     Output: 
         norm      Scalar  Float of variance for a given slice of the template/search and pattern
      """
-    g_slice_squared = g_slice ** 2
+    a = g_slice ** 2
     # b = a.sum()
-    g_slice_sq_sum = g_slice_squared.sum()
-    product = pattern * g_slice_sq_sum
+    b = a.sum()
+    c = p * b
     #norm = np.sqrt( p * ( g_slice**2).sum() )
-    norm = np.sqrt(product) 
+    norm = np.sqrt(c) 
     return norm
 
 #@jit(nopython=True)
-def calculate_score( pattern, template, offset):
+def calculate_score( pattern, template):
     """
     Correlation for 1D slice of N size template/search array with pattern at given offset. Sum(f[i]*g[i+m])
  
@@ -121,20 +122,30 @@ def calculate_score( pattern, template, offset):
      """    
 
 
-    score = 0 
-    i = 0
-    lenp = len(pattern)
-    while i < lenp:
-    #for i in range(len( pattern )):
-        p = pattern[i] 
-        t = template[i + offset]
-        i += 1
-        if t == 0: print(f'i={i}, t = {t}')
-        if t > 0 and p > 0:
-        	score += p * t
-            
-    return score
+    # score = 0 
+    # i = 0
+    # lenp = len(pattern)
+    # while i < lenp:
+    # #for i in range(len( pattern )):
+    #     p = pattern[i] 
+    #     t = template[i + offset]
+    #     i += 1
+    #     if t > 0 and p > 0:
+    #     	score += p * t
+    # return score
 
+# begin slice: max(p, offset)
+# end slice: min(p + offset, p + t -1)
+
+# pattern *template[max(p, offset):min(p + offset, p + t -1) ]
+
+# p[p-1] * t[p-1]
+# p[p-2:p-1] * t[p-1: p]]
+# p[p-3:p-1] * t[p-1: p+1]
+# p[p-3:p-1] * t[p:p+2]
+
+
+    return (pattern * template).sum()
         
     # p = pattern.shape[0]
     # t = pattern.shape[0]
@@ -195,7 +206,7 @@ def find_best_match( score ):
     return index, max_element
 
 
-def norm_cross_corr( pattern, template ): #change later to signal 1 and 2 as inputs
+def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2 as inputs
     """
     Normed cross correlation of two 1D arrays 
  
@@ -220,17 +231,29 @@ def norm_cross_corr( pattern, template ): #change later to signal 1 and 2 as inp
     norm_scores = [0.0] * corr_len 
     #Precalculate pattern squared-sum and store, reduces calculation time by half 
     pattern_arr = np.array( pattern ) 
+    import pdb; pdb.set_trace()
     pattern_sq_sum = ( pattern_arr ** 2 ).sum() #to use in norm - memoised values to reduce number of computations    
     template_pad_arr = np.array( template_padded )
     #Find normed cross correlation from convolution of pattern with template array slices
-    t_start = time.time()
+    len_t = len(template_pad_arr)
     
+    t_start = time.time()
+    #If speed is true, slices are taken without padding for the cross-corr
     for i in range( corr_len ):
         t_step = time.time()
         g_slice = template_pad_arr[ i : i + len_p ] 
-             
-        score_i = calculate_score( pattern, template_padded, i)
-        #scores[ i ] = score_i   
+        if speed:
+            temp_slice_start = max(i, len_p -1 )
+            temp_slice_end = min(len_t -len_p , i + len_p)
+            pattern_slice_start = max(0, len_p -1 - i)
+            pattern_slice_end = min(len_p, len_p - ( (i + len_p) - (len_t - len_p)  ))
+            #Add short explanation 
+            temp_slice = template_pad_arr[ temp_slice_start : temp_slice_end ] 
+            pat_slice = pattern_arr[pattern_slice_start : pattern_slice_end] 
+            score_i = calculate_score( pat_slice, temp_slice) 
+        else:
+            score_i = calculate_score( pattern_arr, g_slice)     
+        
         #Whenever the norm is zero, the cross correlation is not calculated 
         if  score_i != 0 : 
             norm_i = calculate_energy( pattern_sq_sum, g_slice)
@@ -238,12 +261,13 @@ def norm_cross_corr( pattern, template ): #change later to signal 1 and 2 as inp
         if i%100 == 0:
             tn = time.time() - t_step
             print("time=",tn)
+            print(f' norm= {len(norm_scores)}' )
             print( f' i = { i } step time =  { tn - t_step} run time =  { tn - t_step}')
     
     return norm_scores
 
 
-def find_offset( sig1, sig2 ): 
+def find_offset( sig1, sig2, speed ): 
     """
     1D array offset index and value from  cross correlation 
  
@@ -255,14 +279,14 @@ def find_offset( sig1, sig2 ):
     ----------------
         (best_score, best_match)  Index of offset found from cross correlation
      """     
-    correlation_arr = norm_cross_corr( sig1, sig2 )  
+    correlation_arr = norm_cross_corr( sig1, sig2, speed )  
 
     idx, maxval = find_best_match( correlation_arr ) #clean this up
     #print( best_match )
 
     # subtract padding: - (len - 1)
     offset = idx - len( sig1 ) + 1
-    return offset, maxval 
+    return offset, correlation_arr 
 
 
 
@@ -315,19 +339,16 @@ def visualise_signals(s1_Data, s2_Data):
     # plt.grid()
     # plt.show()
 
-    fig = plt.figure(figsize=(10, 4))
     npts = len( s1_Data )
     t = np.linspace(0, len(s1_Data ), npts)
-
+    fig = plt.figure(figsize=(10, 4))
     plt.plot(t,s1_Data, color = 'red')
     plt.xlabel("time (s)")
     plt.ylabel("Amplitude")
     plt.title("Sensor-1 Data Plot")
     plt.grid()
     plot_save("Sensor-1 Data Plot")
-    plt.show()
-
-
+ 
     fig = plt.figure(figsize=(10, 4))
     plt.plot(t,s2_Data, color = 'blue')
     plt.xlabel("time (s)")
@@ -335,8 +356,7 @@ def visualise_signals(s1_Data, s2_Data):
     plt.title("Sensor-2 Data Plot")
     plt.grid()
     plot_save("Sensor-2 Data Plot")
-    plt.show()
-
+  
     fig = plt.figure(figsize=(10, 4))
     plt.plot(t,s1_Data, color = 'red')
     plt.plot(t,s2_Data, color = 'blue')
@@ -345,8 +365,6 @@ def visualise_signals(s1_Data, s2_Data):
     plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
     plt.grid()
     plot_save("Sensor-1 and Sensor-2 Combined Data Plot")
-    plt.show()
-
 
 def visualise_ccr(lags,n_ccor, label):
     fig = plt.figure(figsize=(10, 4))
@@ -376,5 +394,6 @@ def init_vars(npts, add=1):
 
 def plot_save(label):
     plt.tight_layout()
-    plt.savefig(f'fig_{label}.png',dpi = 250)
+    path = os.path.join("..","figures","1D_signal_temporal",f'fig_{label}.png')
+    plt.savefig(path,dpi = 250)
     

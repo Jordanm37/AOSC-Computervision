@@ -8,18 +8,18 @@ def main():
     # Record start 
     start = time.time()
     
-    #Read input files and convert to grayscale
+    # Read input files and convert to grayscale
     patternDir = "wallypuzzle_rocket_man.png"
     templateDir = "wallypuzzle_png.png"
 
-    #gray 1
+    # gray 1
     pattern = read_image( patternDir )
     template = read_image( templateDir )
 
     pattern_gray = convert_gray( pattern )
-    template_gray = convert_gray( template ) )
+    template_gray = convert_gray( template ) 
 
-    #mean shift
+    # mean shift
     pattern_ms = pattern_gray - np.mean(pattern_gray)
     template_ms = template_gray - np.mean(template_gray)
     # print(pattern_image)
@@ -32,7 +32,7 @@ def main():
     # Intesity histogram plot
     lum_img_1 = pattern_ms[:, :]
     lum_img_2 = template_ms[:, :]
-    #plots of priginal and greyscale
+    # plots of original and greyscale
     fig = plt.figure(figsize=(10, 4))
     plt.subplot(2,2,1)
     plt.imshow(pattern)
