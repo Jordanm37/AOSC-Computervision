@@ -15,29 +15,27 @@ Other programs have been written in Python and Numpy, Matplotlib, Scipy (without
 ## Compilation and Execution Instructions
 
 ## Data
-The  data sets for expereiment 1 are in exp1_patternMatching, xxxxxxxxxxxxxxxxx
-"" ""
-THe python files read data from a hardcoded path. 
+The python files read data from a hardcoded path to the local folder. 
 
 ## Cross correlation in 1D and 2D
 
 To excecute 1D spatial cross correlation algortithm, follow these steps:
 1. cd exp1_signalMatching
-2. Run `python spatial_signal_offset.py` to process files `sensorData1.txt` and `sensorData2.txt` 
-3. To toggle SSD, set `use_SSD = True` on line `xx`.
-4. To toggle the library function, set `use_library = True` on line `xx`. 
-5. To toggle the handmade cross correlation, set `use_handmade = True` on line `xx`. Currently this method takes approximately one hour. 
-6. To toggle the faster handmade convolution method, set `speed_up = True` on line cc. 
+2. Run `python signal_offset_temporal.py` to process files `sensorData1.txt` and `sensorData2.txt` 
+3. To toggle SSD, set `use_SSD = True` on line `13`.
+4. To toggle the library function, set `use_library = True` on line `14`. 
+5. To toggle the handmade cross correlation, set `use_convolution = True` on line `15`. Currently this method takes approximately one hour. 
+6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. 
 
 To excecute 1D spectral cross correlation algortithm, follow these steps:
 1. Run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
 
 To excecute 2D spatial cross correlation algortithm, follow these steps:
 7. cd imageMatching
-8. Run `python where_wally.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
+8. Run `python spatial_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
 
 To excecute 2D spectral cross correlation algortithm, follow these steps:
-9. Run `python where_wally_FT.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
+9. Run `python spectral_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
 
 ## Depth Mapping
 To excecute the stereo vision depth mapping:
