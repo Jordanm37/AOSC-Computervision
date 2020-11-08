@@ -2,13 +2,25 @@ import scipy as sp
 import numpy as np
 import matplotlib.image as mpimg 
 import matplotlib.pyplot as plt
+import os
 
 def convert_gray(image):
-
-    image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]
+    """
+    Convert RGB image to Gray-Scale using formula:
+    0.2989 * R + 0.5870 * G + 0.1140 * B
+    
+    Inputs:
+    ----------------
+        RGB Image
+    
+    Output:
+    ----------------   
+        Gray-Scale Image    
+    
+    """
+    image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]   
     
     return image
-
 
 def calculate_energy( pattern, template, offset_x, offset_y ):
     """
@@ -29,6 +41,7 @@ def calculate_energy( pattern, template, offset_x, offset_y ):
     ----------------
         norm       list   Scalar float of variance for a given an array slice of the template/search and pattern
      """    
+     
     g_slice = template[ offset_x : offset_x +pattern.shape[0],  offset_y : offset_y + pattern.shape[1]] 
     norm = np.sqrt( ( pattern**2 ).sum() * ( g_slice**2).sum() ) 
 
@@ -44,8 +57,6 @@ def calculate_energy( pattern, template, offset_x, offset_y ):
     #     print ("p=", pattern, "template=", g_slice, "offset_x = ", offset_x, "offset_y = ", offset_y, "\n")
 
     return norm
-
-
 
 def calculate_score( pattern, template, offset_x, offset_y):
     """
@@ -65,18 +76,16 @@ def calculate_score( pattern, template, offset_x, offset_y):
      """        
 
     score = (pattern * template[ offset_x : offset_x +pattern.shape[0],  offset_y : offset_y + pattern.shape[1]] ).sum()
-
+   
     return score
 
-
-
-def zero_padding(array, padlen_x, padlen_y):
+def zero_padding(input_array, padlen_x, padlen_y):
     """
-    Zero pad 2D array by placing it in centre of zeroed matrix of padded size.
+    Zero pad 2D input_array by placing it in centre of zeroed matrix of padded size.
  
     Inputs:
     ----------------
-        array   The array to pad
+        input_array   The array to pad
  
         padlen_x    Padwidth of the rows. Floats will be rounded up.
         
@@ -85,14 +94,14 @@ def zero_padding(array, padlen_x, padlen_y):
     Output:
     ----------------
         padded  Padded template array.  
-     """        
-    m,n = array.shape
-    padded = np.zeros((m +2*padlen_x , n+2*padlen_y ),dtype=array.dtype)
-    padded[padlen_x:-padlen_x:, padlen_y:-padlen_y] = array
+     """ 
+     
+    m,n = input_array.shape
+    padded = np.zeros((m +2*padlen_x , n+2*padlen_y ),dtype=input_array.dtype)
+    padded[padlen_x:-padlen_x:, padlen_y:-padlen_y] = input_array
+    
     return padded
 
-
-#function that finds the largest element and its index in an array
 def find_best_match( score ):
     """
     Find max value in 2D array and its index
@@ -107,7 +116,8 @@ def find_best_match( score ):
         
         max_element Max Element in the array
 
-     """        
+     """
+     
     #try:
     max_element = np.amax( score )
     #except:
@@ -115,7 +125,6 @@ def find_best_match( score ):
     index = np.unravel_index(np.argmax( score, axis=None), score.shape) 
 
     return index, max_element 
-
 
 def n_corr2d( pattern, template):
     """
@@ -158,10 +167,7 @@ def n_corr2d( pattern, template):
         
         #print( "s=", scores,"\n", "n=", norm, "\n")
 
-
     return norm_scores
-
-
 
 def find_offset(pattern, template): 
     """
@@ -190,8 +196,7 @@ def find_offset(pattern, template):
 
     #subtracting centred offset
     return (best_match[0] - pattern.shape[0]  + 1, best_match[1] -  pattern.shape[1]  + 1 ), match_value
-
-    
+ 
 def read_image(image_name):
     """
     Read image 
@@ -210,6 +215,10 @@ def read_image(image_name):
     return img
 
 def visualise_signals(s1_Data, s2_Data):
+    '''
+    Visualize signals:
+    '''
+
     # fig = plt.figure(figsize=(10, 4))
     # SubPlotRow=1
     # SubPlotCol=3
@@ -245,7 +254,6 @@ def visualise_signals(s1_Data, s2_Data):
     plot_save("Sensor-1 Data Plot")
     plt.show()
 
-
     fig = plt.figure(figsize=(10, 4))
     plt.plot(t,s2_Data, color = 'blue')
     plt.xlabel("time (s)")
@@ -265,3 +273,60 @@ def visualise_signals(s1_Data, s2_Data):
     plot_save("Sensor-1 and Sensor-2 Combined Data Plot")
     plt.show()
 
+def visualize_results(pattern,pattern_ms,template,template_ms,horCen,vertCen,image_cross,):
+    '''
+    Visualize pattern and template images   
+    '''
+        
+    # Intesity histogram plot
+    lum_img_1 = pattern_ms[:, :]
+    lum_img_2 = template_ms[:, :]  
+    
+    # plots of original and greyscale
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(2,2,1)
+    plt.imshow(pattern)
+  
+    plt.subplot(2,2,2)
+    plt.imshow(template)
+    
+    plt.subplot(2,2,3)
+    plt.imshow(pattern_ms)
+    
+    plt.subplot(2,2,4)
+    plt.imshow(template_ms)
+    plot_save("wholePatternAndTemplatePlots")
+    
+    #plot of intensity
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)
+    plt.imshow(pattern_ms)
+    
+    plt.subplot(1,2,2)
+    plt.imshow(template_ms)
+    #plot_save("intensityPlot")
+    
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)  
+    plt.hist(lum_img_1.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+    plt.title("Pixel intensity of pattern")
+    plt.subplot(1,2,2)  
+    plt.hist(lum_img_2.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+    plt.title("Pixel intensity of template")
+    plot_save("pixelIntensityOfTemplate")
+    plt.show()
+    
+    #plot mark where pattern is found
+    plt.imshow( template )
+    plot_save("pixel_intensity_of_template")     
+    circle=plt.Circle(( image_cross[1] + vertCen, image_cross[0] + horCen ), \
+    50, facecolor='red', edgecolor='blue', linestyle='dotted', linewidth='2.2')
+    
+    plt.gca().add_patch(circle)  
+    plot_save("pixel_intensity_of_template_with_circle") 
+    plt.show()  
+    plt.ion()        
+    
+def plot_save(label):
+    path = os.path.join("..","figures","2D_image_spatial","fig_" + label + ".png")
+    plt.savefig(path)

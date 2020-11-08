@@ -4,17 +4,18 @@ import math
 import os
 import matplotlib.pyplot as plt
 from itertools import islice
+import pdb
 
-
-def fewerDataPoints(data_1, data_2, nth):
+def fewer_data_points(data_1, data_2, nth):
 #Debugging size for smaller runs 
 
     return data_1[::nth],data_2[::nth] 
 
 #version 2 SSD
 #Added functions to improve computation time 
+
 #1
-def CalcMean(lst):
+def calc_mean(lst):
     Sum = 0
     for i in range(0,len(lst)):
         Sum = Sum + lst[i]
@@ -22,52 +23,50 @@ def CalcMean(lst):
     return(Mean)
 
 #2
-def CalcSD(lst,Mean):
-    SD = 0
+def calc_sd(lst,Mean):
+    sd = 0
     for i in range(0,len(lst)):
-        SD = SD + (lst[i]-Mean)*(lst[i]-Mean)
-    SD = math.sqrt(SD/len(lst))        
-    return(SD)    
+        sd = sd + (lst[i]-Mean)*(lst[i]-Mean)
+    sd = math.sqrt(sd/len(lst))        
+    return(sd)    
 
 #3
-def CalcCrossCorr(f,g,fmean,gmean):
-    Sum=0
+def calc_crossCorr(f,g,fmean,gmean):
+    sumRes=0
     for i in range(0,len(f)):
-        Sum = Sum + (f[i]-fmean)*(g[i]-gmean)
-    CrossCorr = Sum/len(f)
+        sumRes = sumRes + (f[i]-fmean)*(g[i]-gmean)
+    CrossCorr = sumRes/len(f)
     return(CrossCorr)
 
 #4    
-def CalcNormalisedCrossCorr(f,g,fmean,gmean,fsd,gsd):
-    Sum = 0
+def calc_NormalisedCrossCorr(f,g,fmean,gmean,fsd,gsd):
+    sumRes = 0
     NormCrossCorr = np.zeros(len(f))
     for i in range(0,len(f)):
-        Sum = Sum + (f[i]-fmean)*(g[i]-gmean)
-        NormCrossCorr[i] = Sum/(len(f)*fsd*gsd)
+        sumRes = sumRes + (f[i]-fmean)*(g[i]-gmean)
+        NormCrossCorr[i] = sumRes/(len(f)*fsd*gsd)
     return NormCrossCorr
 
-def SSD_method( s1_Data, s2_Data):
+def ssd_method( s1_Data, s2_Data):
 
-    S1_Mean = CalcMean( s1_Data )
-    S2_Mean = CalcMean( s2_Data )
+    s1_Mean = calc_mean( s1_Data )
+    s2_Mean = calc_mean( s2_Data )
 
-    S1_sdev = CalcSD( s1_Data, S1_Mean )
-    S2_sdev = CalcSD( s2_Data, S2_Mean ) 
+    s1_sdev = calc_sd( s1_Data, s1_Mean )
+    s2_sdev = calc_sd( s2_Data, s2_Mean ) 
 
-    CCR = CalcCrossCorr( s1_Data, s2_Data,S1_Mean, S2_Mean)
-    NormCCR = CalcNormalisedCrossCorr( s1_Data, s2_Data, S1_Mean, S2_Mean, S1_sdev, S2_sdev)
+    ccr = calc_crossCorr( s1_Data, s2_Data,s1_Mean, s2_Mean)
+    normCCR = calc_NormalisedCrossCorr( s1_Data, s2_Data, s1_Mean, s2_Mean, s1_sdev, s2_sdev)
 
-    print("\nMean of Sensor Data-1 = %f"%S1_Mean)
-    print("Mean of Sensor Data-2 = %f"%S2_Mean)
+    print("\nMean of Sensor Data-1 = %f" % s1_Mean)
+    print("Mean of Sensor Data-2 = %f" % s2_Mean)
 
-    print("\nStandard Deviation of Sensor Data-1  = %.3f"%S1_sdev)
-    print("Standard Deviation of Sensor Data-2  = %.3f"%S2_sdev)
+    print("\nStandard Deviation of Sensor Data-1  = %.3f" % s1_sdev)
+    print("Standard Deviation of Sensor Data-2  = %.3f" % s2_sdev)
 
-    return CCR, NormCCR
-
-
+    return ccr, normCCR
+    
 #library
-
 def normalise(ccov, y1, y2, s1_Data):
     npts = len( s1_Data )
     return ccov / (npts * y1.std() * y2.std())
@@ -83,7 +82,6 @@ def library_method(s1_Data, s2_Data):
     n_ccor = normalise(ccov, y1, y2, s1_Data)
 
     return ccov, n_ccor
-
 
 #Handmade
 def calculate_energy( p, g_slice ): 
@@ -121,7 +119,6 @@ def calculate_score( pattern, template):
         score  Scalar float of correlation score between pattern and template slice
      """    
 
-
     # score = 0 
     # i = 0
     # lenp = len(pattern)
@@ -134,16 +131,15 @@ def calculate_score( pattern, template):
     #     	score += p * t
     # return score
 
-# begin slice: max(p, offset)
-# end slice: min(p + offset, p + t -1)
+    # begin slice: max(p, offset) 
+    # end slice: min(p + offset, p + t -1)
 
-# pattern *template[max(p, offset):min(p + offset, p + t -1) ]
+    # pattern *template[max(p, offset):min(p + offset, p + t -1) ]
 
-# p[p-1] * t[p-1]
-# p[p-2:p-1] * t[p-1: p]]
-# p[p-3:p-1] * t[p-1: p+1]
-# p[p-3:p-1] * t[p:p+2]
-
+    # p[p-1] * t[p-1]
+    # p[p-2:p-1] * t[p-1: p]]
+    # p[p-3:p-1] * t[p-1: p+1]
+    # p[p-3:p-1] * t[p:p+2]
 
     return (pattern * template).sum()
         
@@ -154,8 +150,6 @@ def calculate_score( pattern, template):
     # p_slice = pattern[:t_slice.shape[0]]
 
     # return np.dot(t_slice, p_slice)
-
-
 
 def zero_padding( pattern, template ):
     """
@@ -178,8 +172,7 @@ def zero_padding( pattern, template ):
     template_padded = pad + list(template) + pad
 
     return template_padded
-
-
+    
 #function that finds the largest element and its index in an array
 def find_best_match( score ):
     """
@@ -205,7 +198,6 @@ def find_best_match( score ):
 
     return index, max_element
 
-
 def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2 as inputs
     """
     Normed cross correlation of two 1D arrays 
@@ -219,8 +211,8 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
     Output:
     ----------------
         norm_scores  Normed cross correlation array
-     """       
-    
+     """  
+     
     len_p = len(pattern)
     
     #Pad and initalise arrays for calculation   
@@ -229,9 +221,12 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
     #scores = [0.0] * corr_len #must cast as float for later calculations, prevent error (numba requires all floats)
     #norm = [0.0] * corr_len 
     norm_scores = [0.0] * corr_len 
+    
     #Precalculate pattern squared-sum and store, reduces calculation time by half 
     pattern_arr = np.array( pattern ) 
-    import pdb; pdb.set_trace()
+    
+    #pdb.set_trace()
+    
     pattern_sq_sum = ( pattern_arr ** 2 ).sum() #to use in norm - memoised values to reduce number of computations    
     template_pad_arr = np.array( template_padded )
     #Find normed cross correlation from convolution of pattern with template array slices
@@ -239,6 +234,7 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
     
     t_start = time.time()
     #If speed is true, slices are taken without padding for the cross-corr
+    
     for i in range( corr_len ):
         t_step = time.time()
         g_slice = template_pad_arr[ i : i + len_p ] 
@@ -260,12 +256,11 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
             norm_scores[i] = score_i / norm_i # division could be optimized?
         if i%100 == 0:
             tn = time.time() - t_step
-            print("time=",tn)
-            print(f' norm= {len(norm_scores)}' )
-            print( f' i = { i } step time =  { tn - t_step} run time =  { tn - t_step}')
+            print("time= ",tn)
+            print(" norm= "  + str(len(norm_scores)) )
+            print(" i = " +  str(i) + "step time = " + str(tn - t_step) +  " run time = " +  str(tn - t_step))
     
     return norm_scores
-
 
 def find_offset( sig1, sig2, speed ): 
     """
@@ -278,7 +273,8 @@ def find_offset( sig1, sig2, speed ):
     Output:
     ----------------
         (best_score, best_match)  Index of offset found from cross correlation
-     """     
+     """    
+     
     correlation_arr = norm_cross_corr( sig1, sig2, speed )  
 
     idx, maxval = find_best_match( correlation_arr ) #clean this up
@@ -287,8 +283,6 @@ def find_offset( sig1, sig2, speed ):
     # subtract padding: - (len - 1)
     offset = idx - len( sig1 ) + 1
     return offset, correlation_arr 
-
-
 
 def read_file( fileName ):
     """
@@ -304,10 +298,10 @@ def read_file( fileName ):
     
     References:
         super9super9 bronze badges, et al. 
-        “Read File from Line 2 or Skip Header Row.” 
+        "Read File from Line 2 or Skip Header Row." 
         Stack Overflow, 1 May 1960, stackoverflow.com/questions/4796764/read-file-from-line-2-or-skip-header-row.    
     """  
-    # with open(fileName) as file: ??
+    
     #     data = file.read()
     data = open( fileName ,"r") 
     data_list = [float(line.strip() ) for line in islice(data, 1, None)] 
@@ -379,7 +373,6 @@ def visualise_ccr(lags,n_ccor, label):
     plot_save(label)
     plt.show()
 
-
 def print_summary(title, NormCCR, maxlag, t_total):
     print(title)
     print("Normalized Cross Correlation = %.3f"%NormCCR)
@@ -394,6 +387,5 @@ def init_vars(npts, add=1):
 
 def plot_save(label):
     plt.tight_layout()
-    path = os.path.join("..","figures","1D_signal_temporal",f'fig_{label}.png')
+    path = os.path.join("..","figures","1D_signal_temporal","fig_" + label + ".png")
     plt.savefig(path,dpi = 250)
-    

@@ -3,7 +3,7 @@ import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
 import time
-
+import os
 
 def read_file( fileName ):
     """
@@ -19,9 +19,10 @@ def read_file( fileName ):
 
     References:
         super9super9 bronze badges, et al. 
-        “Read File from Line 2 or Skip Header Row.” 
+        "Read File from Line 2 or Skip Header Row." 
         Stack Overflow, 1 May 1960, stackoverflow.com/questions/4796764/read-file-from-line-2-or-skip-header-row.    
     """  
+    
     data = open( fileName ,"r") 
     result = [float(line.strip()) for line in islice(data, 1, None)] 
     data.close()
@@ -46,8 +47,6 @@ def mean_dif(pattern):
 
     return pattern
 
-
-
 def arr_fft(pattern):
     """
     FFT of the input array
@@ -61,11 +60,11 @@ def arr_fft(pattern):
         fft   FFT of array
 
      """
+     
     #Take FFt along columns, then rows       
     fft = np.fft.fft(pattern)
 
     return fft
-
 
 def arr_ifft(pattern):
     """
@@ -85,8 +84,6 @@ def arr_ifft(pattern):
 
     return ifft
 
-
-
 def arr_complex_conj(pattern):
     """
     Complex of the input array
@@ -104,7 +101,6 @@ def arr_complex_conj(pattern):
     pattern_fft_conj = np.conj(pattern)
 
     return pattern_fft_conj 
-
 
 def corr(pattern,template):
     """
@@ -140,7 +136,8 @@ def corr(pattern,template):
 
     return corr
 
-def find_best_lag(data_1, data_2,lags):    
+def find_best_lag(data_1, data_2,lags): 
+   
     data_1_shift = mean_dif(data_1)
     data_2_shift = mean_dif(data_2)
     # len_1 = len(data_1_shift)
@@ -154,7 +151,6 @@ def find_best_lag(data_1, data_2,lags):
     maxlag = lags[np.argmax(corr_sig_1_2)]
 
     return maxlag, corr_sig_1_2, t_total
-
 
 def remove_repeated(pattern,length, Fs, label):
     """
@@ -174,12 +170,13 @@ def remove_repeated(pattern,length, Fs, label):
     ----------------
         freq    FT without repeat conjugate pair   
 
-     """  
+    """  
+    
     p = mean_dif(pattern)
     p_fft = arr_fft(p)
-    N = int(length / 2)
+    halfLen = int(length / 2)
     f_res = Fs / length
-    P = np.abs(p_fft[:N])
+    P = np.abs(p_fft[:halfLen])
     freq = np.arange(0, Fs / 2 - f_res, f_res)
 
     plt.figure()
@@ -188,13 +185,11 @@ def remove_repeated(pattern,length, Fs, label):
     plt.title(label)
     
     plt.tight_layout()
-    plt.savefig(f'fig_{label}.png',dpi = 250)
+    path = os.path.join("..","figures","1D_signal_FT","fig_" + label + ".png")
+    plt.savefig(path,dpi = 250)
     plt.show()
-
-
+    
     return freq
-
-
 
 def low_pass(pattern, Fs, length, label, freq , DISPLAY):
     """
@@ -220,11 +215,12 @@ def low_pass(pattern, Fs, length, label, freq , DISPLAY):
 
     p = mean_dif(pattern)
 
-    N = int(length / 2)
+    halfLen = int(length / 2)
     b = signal.firwin(150, [1000, 2000], fs = Fs, pass_zero=False)
     y = signal.lfilter(b, 1, p)
     Y = arr_fft(y)
-    Pf = np.abs(Y[:N])
+    Pf = np.abs(Y[:halfLen])
+    
     if DISPLAY:
         plt.figure()
         plt.plot(freq, Pf)
@@ -232,7 +228,8 @@ def low_pass(pattern, Fs, length, label, freq , DISPLAY):
         plt.title(label)
 
         plt.tight_layout()
-        plt.savefig(f'fig_{label}.png',dpi = 250)
+        path = os.path.join("..","figures","1D_signal_FT","fig_" + label + ".png")
+        plt.savefig(path,dpi = 250)
         plt.show()
 
 def visualise_ccr(lags,n_ccor, label):
@@ -250,5 +247,5 @@ def visualise_ccr(lags,n_ccor, label):
 
 def plot_save(label):
     plt.tight_layout()
-    plt.savefig(f'fig_{label}.png',dpi = 250)
-    
+    path = os.path.join("..","figures","1D_signal_FT","fig_" + label + ".png")
+    plt.savefig(path,dpi = 250)

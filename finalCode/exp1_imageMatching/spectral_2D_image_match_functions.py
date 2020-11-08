@@ -2,9 +2,22 @@ import matplotlib.image as mpimg
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import os
 
 def convert_gray(image):
-
+    """
+    Convert RGB image to Gray-Scale using formula:
+    0.2989 * R + 0.5870 * G + 0.1140 * B
+    
+    Inputs:
+    ----------------
+        RGB Image
+    
+    Output:
+    ----------------   
+        Gray-Scale Image    
+    
+    """
     image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]
     
     return image
@@ -26,8 +39,6 @@ def read_image(image_name):
 
     return img
 
-
-#function that finds the largest element and its index in an array
 def find_best_match(score):
     """
     Find max value in 2D array and its index
@@ -42,7 +53,8 @@ def find_best_match(score):
         
         max_element Max Element in the array
 
-     """      
+     """   
+     
     #try:
     max_element = np.amax(score)
     #except:
@@ -51,7 +63,6 @@ def find_best_match(score):
     #index = np.argmax(score)
 
     return index, max_element # tuple = list, int
-
 
 def matrix_fft(pattern):
     """
@@ -66,6 +77,7 @@ def matrix_fft(pattern):
         fft2   FFT of array
 
      """
+     
     #Take FFt along columns, then rows       
     fft1 = np.fft.fft(pattern, axis = 0)
     fft2 = np.fft.fft(fft1, axis = 1)
@@ -92,7 +104,6 @@ def matrix_ifft(pattern):
 
     return ifft2
 
-
 def matrix_complex_conj(pattern):
     """
     Complex of the input array
@@ -110,8 +121,6 @@ def matrix_complex_conj(pattern):
     pattern_fft_conj = np.conj(pattern)
 
     return pattern_fft_conj 
-
-
 
 def zero_padding(C, x_pad, y_pad):
     """
@@ -153,7 +162,6 @@ def zero_padding(C, x_pad, y_pad):
     
     return np.pad(C, [(x_pad, ), (y_pad, )], mode='constant')
 
-
 def nextpow2(n):
 
     """get the next power of 2 that's greater than n"""
@@ -161,7 +169,6 @@ def nextpow2(n):
     m_i = np.ceil(m_f)
 
     return 2**m_i
-
 
 def crr_2d( pattern, template):
     """
@@ -178,6 +185,7 @@ def crr_2d( pattern, template):
         real_corr  Cross correlation array
      """  
     '''Old padding'''
+    
     side_edge_pad = template.shape[0] - pattern.shape[0] # move into zero padding function
     bottom_edge_pad = template.shape[1] - pattern.shape[1]
 
@@ -188,15 +196,11 @@ def crr_2d( pattern, template):
 
     # a * b
     #Offset pattern due to padding
-    product = pattern_fft_conj[0: pattern_fft_conj.shape [0], 0: pattern_fft_conj.shape [1] ] *  template      
-        
-    ccr = matrix_ifft(product)
-    
+    product = pattern_fft_conj[0: pattern_fft_conj.shape [0], 0: pattern_fft_conj.shape [1] ] *  template              
+    ccr = matrix_ifft(product)    
     real_corr = np.real(ccr) #np.real
 
     return real_corr
-
-
 
 def find_offset(pattern, template): 
     """
@@ -216,6 +220,7 @@ def find_offset(pattern, template):
     '''
     new resizing for odd sides
     '''
+    
     extra_row = 0
     extra_col = 0
     a = pattern
@@ -238,9 +243,31 @@ def find_offset(pattern, template):
     template = b
 
     real_corr = crr_2d( pattern, template) 
-
     best_match , match_value = find_best_match( real_corr )
-
-
+   
     return (best_match[0] - 2 * pattern.shape[0] - extra_row, best_match[1] - 2 * pattern.shape[1] - extra_col), match_value
 
+def visualize_results(pattern,pattern_s,template,hor_cen,vert_cen,image_cross):
+    '''
+    Visualize pattern and template images   
+    '''
+    
+    #plot shift FFT of image
+    # plt.subplot(2,2,1)
+    plt.imshow( np.fft.fftshift( np.imag(matrix_fft(pattern_s)) ) ) 
+    # plt.subplot(2,2,2)
+    plt.imshow( pattern )   
+    # plt.subplot(2,2,3)
+    plt.imshow( template )  
+    circle=plt.Circle(( image_cross[1] + vert_cen ,\
+    image_cross[0] + hor_cen  ),\
+    50,facecolor='red', edgecolor='blue',linestyle='dotted', \
+    linewidth='2.2')
+    plt.gca().add_patch(circle)
+    plot_save("results")
+    plt.show()    
+    plt.ion()  
+
+def plot_save(label):
+    path = os.path.join("..","figures","2D_image_FT","fig_" + label + ".png")
+    plt.savefig(path)
