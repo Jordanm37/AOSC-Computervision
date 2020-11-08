@@ -33,15 +33,15 @@ def getCirclesCN(locs, rgb_testim, ori_im, display=display_default):
     c = c.reshape(1,len(c))
     w, h = tl_gFltrd.shape[::-1]
     n = 0
-    print(len(locs))
+    # print(len(locs))
     for pt in zip(*locs[::-1]):
         c1 = np.asarray(pt)
         c1 = c1.reshape(1, len(c1))
         c = np.append(c,c1,axis = 0)    
         n = n+1 
-        print(pt, n)
+        # print(pt, n)
     c = np.delete(c, 0, 0)
-    print('first for ended')
+    # print('first for ended')
     for i in range(n):
         pt_p = c[i,]
         for j in range(i+1,n):
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     print(len(alltmplimages))
     print(len(alltestimages))
     #Start processing each image pairs
-    for idx in range(0,len(alltestimages)):
+    for idx in range(len(alltestimages)):
         #Print start of the processing step
         print('______________________________________________________________')
         print('Processing image set '+str(idx+1))
@@ -249,16 +249,16 @@ if __name__ == "__main__":
         print('______________________________________________________________')
         #Transformation applied on input image: Color, Filter and Blur 
         tt_rgb, tt_gry, tt_gFltrd, tt_gblrd, tt_ori = readAndProcess(testImage)
-        print("HERE1")
+        # print("HERE1")
         tl_rgb, tl_gry, tl_gFltrd, tl_gblrd, tl_ori = readAndProcess(tmplImage)
-        print("HERE2")
+        # print("HERE2")
         thresh = 0.65
         res = cv2.matchTemplate(tt_gFltrd, tl_gFltrd, cv2.TM_CCORR_NORMED)
-        print("HERE3")
+        # print("HERE3")
         locs = np.where(res >= thresh)    
         #Get circles using method : CCORR_NORMED
         circlesCN, plotCNCirlces = getCirclesCN(locs, tt_rgb, tt_ori, display=display_default)
-        print("HERE4")
+        # print("HERE4")
         print("Number of circles detected by CCORR_NORMED method :: "+str(len(circlesCN[0])))
         #Get circles using method : Hough circles
         circlesHC, plotHCCirlces = getCirclesHC(img_orig=tt_ori, rgb = tt_rgb, greyBlurd=tt_gblrd, min_dist=10, param_1=100, param_2=15, display=display_default)
