@@ -11,9 +11,9 @@ speed_sound = 333
 
 def main():
 
-    use_SSD = False #Calculate using library functions and mean
+    use_SSD = True #Calculate using library functions and mean
     use_library = True 
-    use_convolution = False
+    use_convolution = True
     speed_up = True
     nth = False #to pick every nth element as a sample, set nth to number > 2
     #Read signal data and summarise
@@ -24,7 +24,7 @@ def main():
     visualise_signals(s1_Data, s2_Data)
     # if nth > 0:
     #     s1_Data, s1_Data = fewerDataPoints(s1_Data, s2_Data, nth)
-    # npts = len( s1_Data )
+    npts = len( s1_Data )
          
 
     #This method uses the mean and standard deviation to remove noise from the signal data
