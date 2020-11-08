@@ -27,6 +27,7 @@ To excecute 1D spatial cross correlation algortithm, follow these steps:
 3. To toggle SSD, set `use_SSD = True` on line `xx`.
 4. To toggle the library function, set `use_library = True` on line `xx`. 
 5. To toggle the handmade cross correlation, set `use_handmade = True` on line `xx`. Currently this method takes approximately one hour. 
+6. To toggle the faster handmade convolution method, set `speed_up = True` on line cc. 
 
 To excecute 1D spectral cross correlation algortithm, follow these steps:
 1. Run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
