@@ -15,7 +15,7 @@ def main():
     
     pattern_s = pattern_gray - np.mean(pattern_gray)
     template_s = template_gray - np.mean(template_gray)
-    
+  
     start = time.time()
     image_cross, image_cross_value = find_offset( pattern_s, template_s)
     end = time.time()

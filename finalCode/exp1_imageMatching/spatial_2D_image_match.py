@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
 import time
-from spatial_2d_image_match_functions import *
+from spatial_2D_image_match_functions import *
 
 def main():
 
@@ -22,6 +22,7 @@ def main():
     # mean shift
     pattern_ms = pattern_gray - np.mean(pattern_gray)
     template_ms = template_gray - np.mean(template_gray)
+
     # print(pattern_image)
     # Find position of max ccr value, where the pattern image is found in
     # template
