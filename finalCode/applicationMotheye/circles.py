@@ -7,7 +7,7 @@ from scipy.spatial import distance
 from collections import Counter
 import warnings
 warnings.filterwarnings("ignore")
-display_default = False
+display_default = True
 
 def files_w_extn(dir_p, ext_n):
     file_names = []
@@ -206,21 +206,34 @@ def numDoubleLayers(dist, circles, rgb, mean_Diameter, circleDiameters, display=
         plt.show()
     return allcounts, count_dl
 
-def circleCompPlot(rgb, gry, gFltrd, gblrd, circlesCN, circlesHC):
+def circleCompPlot(testName, rgb, gry, gFltrd, gblrd, circlesCN, circlesHC):
+    label = testName
     plt.figure(figsize=(20,20))
     plt.subplot(321), plt.imshow(rgb)
     plt.title('RGB'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'RGB_{label}') 
     plt.subplot(322), plt.imshow(gry)
     plt.title('Grey'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'Grey_{label}')
     plt.subplot(323), plt.imshow(gFltrd)
     plt.title('2D Filtered'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'2D Filtered_{label}')
     plt.subplot(324), plt.imshow(gblrd)
     plt.title('Blurred'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'Blurred_{label}')
     plt.subplot(325), plt.imshow(circlesCN)
     plt.title('CCORD_NORMED'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'CCORD_NORMED_{label}')
     plt.subplot(326), plt.imshow(circlesHC)
     plt.title('Hough circle'), plt.xticks([]), plt.yticks([])
+    # plot_save(f'Hough circle_{label}')
+    plot_save(f'Comparison_{label}')
     plt.show()
+
+# def plot_save(label):
+#     plt.tight_layout()
+#     path = os.path.join("..","figures","applicationMotheye",f'fig_{label}')
+#     plt.savefig(path,dpi = 250)
 
 #Main execution block
 if __name__ == "__main__":
@@ -293,4 +306,4 @@ if __name__ == "__main__":
         "\n number of Dodecagon group :",allcounts.get(12))
         print('______________________________________________________________')
         #Print comparison plots: Circles detected by both techniques
-        circleCompPlot(rgb=tt_rgb, gry=tt_gry, gFltrd=tt_gFltrd, gblrd=tt_gblrd, circlesCN = plotCNCirlces, circlesHC=plotHCCirlces)
+        circleCompPlot((testImage), rgb=tt_rgb, gry=tt_gry, gFltrd=tt_gFltrd, gblrd=tt_gblrd, circlesCN = plotCNCirlces, circlesHC=plotHCCirlces )

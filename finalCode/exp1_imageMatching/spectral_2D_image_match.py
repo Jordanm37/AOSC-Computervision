@@ -2,7 +2,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
-from spectral_2d_image_match_functions import *
+from spectral_2D_image_match_functions import *
 
     
 def main():
@@ -25,11 +25,11 @@ def main():
     horCen = pattern_gray.shape[0]/2
 
     #plot shift FFT of image
-    plt.subplot(2,2,1)
+    # plt.subplot(2,2,1)
     plt.imshow( np.fft.fftshift( np.imag(matrix_fft(pattern_s)) ) ) 
-    plt.subplot(2,2,2)
+    # plt.subplot(2,2,2)
     plt.imshow( mpimg.imread( patternDir ) )   
-    plt.subplot(2,2,3)
+    # plt.subplot(2,2,3)
     plt.imshow( mpimg.imread( templateDir ) )  
     circle=plt.Circle(( image_cross[1] + vertCen ,\
     image_cross[0] + horCen  ),\
