@@ -2,7 +2,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
-from where_wally_FT_functions import *
+from spectral_2d_image_match_functions import *
 
     
 def main():

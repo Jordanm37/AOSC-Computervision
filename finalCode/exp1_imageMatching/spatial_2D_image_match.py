@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg 
 import time
-from where_wally_functions import *
+from spatial_2d_image_match_functions import *
 
 def main():
 
