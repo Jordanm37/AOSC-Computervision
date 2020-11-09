@@ -514,7 +514,7 @@ if __name__ == "__main__":
     print(len(alltestimages))
     
     #Start processing each image pairs
-    for idx in range(0, len(alltestimages)):
+    for idx in range(0, len(alltestimages) - 1):
 
         #Print start of the processing step
         print("______________________________________________________________")

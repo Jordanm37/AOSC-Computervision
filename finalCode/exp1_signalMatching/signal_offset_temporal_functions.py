@@ -254,11 +254,11 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
         if  score_i != 0 : 
             norm_i = calculate_energy( pattern_sq_sum, g_slice)
             norm_scores[i] = score_i / norm_i # division could be optimized?
-        if i%100 == 0:
-            tn = time.time() - t_step
-            print("time= ",tn)
-            print(" norm= "  + str(len(norm_scores)) )
-            print(" i = " +  str(i) + "step time = " + str(tn - t_step) +  " run time = " +  str(tn - t_step))
+        # if i%100 == 0:
+        #     tn = time.time() - t_step
+        #     print("time= ",tn)
+        #     print(" norm= "  + str(len(norm_scores)) )
+        #     print(" i = " +  str(i) + "step time = " + str(tn - t_step) +  " run time = " +  str(tn - t_step))
     
     return norm_scores
 
