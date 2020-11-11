@@ -255,10 +255,13 @@ def visualize_results(pattern,pattern_s,template,hor_cen,vert_cen,image_cross):
     #plot shift FFT of image
     # plt.subplot(2,2,1)
     plt.imshow( np.fft.fftshift( np.imag(matrix_fft(pattern_s)) ) ) 
+    plt.show()
     # plt.subplot(2,2,2)
-    plt.imshow( pattern )   
+    plt.imshow( pattern )  
+    plt.show() 
     # plt.subplot(2,2,3)
-    plt.imshow( template )  
+    plt.imshow( template ) 
+    plt.show() 
     circle=plt.Circle(( image_cross[1] + vert_cen ,\
     image_cross[0] + hor_cen  ),\
     50,facecolor='red', edgecolor='blue',linestyle='dotted', \

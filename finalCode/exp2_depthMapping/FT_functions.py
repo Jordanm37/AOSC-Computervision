@@ -127,27 +127,27 @@ def zero_padding(input_array, x_pad, y_pad):
         padded  Padded template array.  
      """        
 
-    # m,n = C.shape
+    m,n = input_array.shape
     
-    # #needs to be int to work not float make this into a round up if float function or find libray function 
-    # if x_pad% 2 == 0:
-    #     x_pad = int(x_pad)
-    # else: 
-    #     x_pad = int( x_pad + 0.5 )
+    #needs to be int to work not float make this into a round up if float function or find libray function 
+    if x_pad% 2 == 0:
+        x_pad = int(x_pad)
+    else: 
+        x_pad = int( x_pad + 0.5 )
 
-    # if y_pad% 2 == 0:
-    #     y_pad = int(y_pad)
-    # else: 
-    #     y_pad = int( y_pad + 0.5 )
+    if y_pad% 2 == 0:
+        y_pad = int(y_pad)
+    else: 
+        y_pad = int( y_pad + 0.5 )
            
-    # c_y = np.zeros((m +2*x_pad , n+2*y_pad ),dtype=input_array.dtype)
-    # c_y[x_pad:-x_pad:, y_pad:-y_pad] = input_array
-    # return c_y
+    c_y = np.zeros((m +2*x_pad , n+2*y_pad ),dtype=input_array.dtype)
+    c_y[x_pad:-x_pad:, y_pad:-y_pad] = input_array
+    return c_y
        
-    x_pad = int(np.round(x_pad))
-    y_pad = int(np.round(y_pad))
+    # x_pad = int(np.round(x_pad))
+    # y_pad = int(np.round(y_pad))
     
-    return np.pad(input_array, [(x_pad, ), (y_pad, )], mode='constant')
+    # return np.pad(input_array, [(x_pad, ), (y_pad, )], mode='constant')
 
 def nextpow2(number):
 
@@ -186,7 +186,7 @@ def crr_2d( pattern, template):
     #a * b. Offset pattern due to padding
     width = pattern_fft_conj.shape[0]
     height = pattern_fft_conj.shape[1]
-    product = pattern_fft_conj[0:width, 0:height] *  template      
+    product = pattern_fft_conj[0:width, 0:height-1] *  template[0:width, 0:height]      
         
     ccr = matrix_ifft(product)    
     real_corr = np.real(ccr) 

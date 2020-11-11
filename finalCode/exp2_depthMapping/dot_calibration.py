@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Oct 20 09:05:04 2020
-Last Updated on 23 Oct 20
-Combine Trial 1
-"""
-
 # importing necessary libraries
 import cv2
 import numpy as np
@@ -25,27 +18,13 @@ def fun1(img_orig, img_template):
     # To convert image to gray scale
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
     # To convert image to gray scale after applying filter
-    img_gray1 = cv2.cvtColor(img_filter, cv2.COLOR_RGB2GRAY)
-    # # To convert image to gray scale after sharpening
-    # kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
-    # img_gray2 = cv2.filter2D(img_gray, -1, kernel_sharpening)
-    # img_gray3 = cv2.medianBlur(img_gray,1)  # Blurs an image using the median filter.
-    # (thresh, img_bw) = cv2.threshold(img_gray2, 125, 255, cv2.THRESH_BINARY)
-    
-    # To import temlplate as it is required to count circle by CCORR_NORMED method
-    # and applying same precessing
-    
+    img_gray1 = cv2.cvtColor(img_filter, cv2.COLOR_RGB2GRAY) 
     img_bgr_t = img_template
     img_rgb_t = cv2.cvtColor(img_bgr_t, cv2.COLOR_BGR2RGB)
     img_blur_t = cv2.bilateralFilter(img_rgb_t, d = 9, sigmaSpace = 75, sigmaColor =75)
     img_gray_t = cv2.cvtColor(img_rgb_t, cv2.COLOR_RGB2GRAY)
     img_gray_t1 = cv2.cvtColor(img_blur_t, cv2.COLOR_RGB2GRAY)
-    # img_gray_t2 = cv2.filter2D(img_gray_t, -1, kernel_sharpening)
-    # img_gray_t3 = cv2.medianBlur(img_gray_t,1) 
-    # (thresh, img_bw_T) = cv2.threshold(img_gray_t2, 125, 255, cv2.THRESH_BINARY)
-    
-    # Method 1 of CCORR_NORMED to count circles
-    
+   
     res_L = cv2.matchTemplate(img_gray1,img_gray_t1,cv2.TM_CCORR_NORMED)
     
     
@@ -87,21 +66,21 @@ def fun1(img_orig, img_template):
         c22[i1*17:i1*17+17,:] = C_l0[np.argsort(C_l0[:, 1])]
     
     d = distance.euclidean(c22[0,:], c22[len(c22)-1,:])
-    # img_rgb1 = np.copy(img_rgb)
-    
-    # # To print and display detected circles
-    # for l in range(len(c2)):
-    #     cv2.circle(img_rgb1, (int(round(c22[l,0] + w/2)), int(round(c22[l,1] + h/2))), 1, (0,255,255), 50)
 
-    # # l = 22
-    # # cv2.circle(img_rgb1, (int(round(c22[l,0] + w/2)), int(round(c22[l,1] + h/2))), 1, (0,255,255), 50)    
-    # print("Circle count by CCORR_NORMED method : ",len(c22))            
-    # plt.figure()
-    # plt.subplot(121),plt.imshow(img_orig)
-    # plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(122),plt.imshow(img_rgb1)
-    # plt.title('Output Image by CCORR_NORMED'), plt.xticks([]), plt.yticks([])
-    
+    img_rgb1 = np.copy(img_rgb)
+    # To print and display detected circles
+    for l in range(len(c2)):
+        cv2.circle(img_rgb1, (int(round(c22[l,0] + w/2)), int(round(c22[l,1] + h/2))), 1, (0,255,255), 50)
+
+    # l = 22
+    # cv2.circle(img_rgb1, (int(round(c22[l,0] + w/2)), int(round(c22[l,1] + h/2))), 1, (0,255,255), 50)    
+    #print("Circle count by CCORR_NORMED method : ",len(c22))            
+    plt.figure()
+    plt.subplot(121),plt.imshow(img_orig)
+    plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122),plt.imshow(img_rgb1)
+    plt.title('Output Image by CCORR_NORMED'), plt.xticks([]), plt.yticks([])
+    #plt.show()
     return c22, d
 
 def reverse(C_r):
@@ -117,47 +96,7 @@ def reverse(C_r):
         k = k - 1
     return C_r2
 
-img_orig_l_2000 = cv2.imread('cal_image_left_2000.tiff')    
-img_orig_r_2000 = cv2.imread('cal_image_right_2000.tiff')
-img_orig_l_1980 = cv2.imread('cal_image_left_1980.tiff')    
-img_orig_r_1980 = cv2.imread('cal_image_right_1980.tiff')
-img_orig_l_1960 = cv2.imread('cal_image_left_1960.tiff')    
-img_orig_r_1960 = cv2.imread('cal_image_right_1960.tiff')
-img_orig_l_1940 = cv2.imread('cal_image_left_1940.tiff')    
-img_orig_r_1940 = cv2.imread('cal_image_right_1940.tiff')
-img_orig_l_1920 = cv2.imread('cal_image_left_1920.tiff')    
-img_orig_r_1920 = cv2.imread('cal_image_right_1920.tiff')
-img_orig_l_1900 = cv2.imread('cal_image_left_1900.tiff')    
-img_orig_r_1900 = cv2.imread('cal_image_right_1900.tiff')
 
-img_template = cv2.imread('T4.tiff')
-
-
-C_l_2000, d_l2000 = fun1(img_orig_l_2000, img_template)
-C_r_2000, d_r2000 = fun1(img_orig_r_2000, img_template)
-z_factor_2000 = 0.5*(d_l2000+d_r2000)/2000
-C_l_1980, d_l1980 = fun1(img_orig_l_1980, img_template)
-C_r_1980, d_r1980 = fun1(img_orig_r_1980, img_template)
-z_factor_1980 = 0.5*(d_l1980+d_r1980)/1980
-C_l_1960, d_l1960 = fun1(img_orig_l_1960, img_template)
-C_r_1960, d_r1960 = fun1(img_orig_r_1960, img_template)
-z_factor_1960 = 0.5*(d_l1960+d_r1960)/1960
-C_l_1940, d_l1940 = fun1(img_orig_l_1940, img_template)
-C_r_1940, d_r1940 = fun1(img_orig_r_1940, img_template)
-z_factor_1940 = 0.5*(d_l1940+d_r1940)/1940
-C_l_1920, d_l1920 = fun1(img_orig_l_1920, img_template)
-C_r_1920, d_r1920 = fun1(img_orig_r_1920, img_template)
-z_factor_1920 = 0.5*(d_l1920+d_r1920)/1920
-C_l_1900, d_l1900 = fun1(img_orig_l_1900, img_template)
-C_r_1900, d_r1900 = fun1(img_orig_r_1900, img_template)
-z_factor_1900 = 0.5*(d_l1900+d_r1900)/1900
-
-op = np.zeros((len(C_l_2000),2))
-              
-for i in range(21):
-    op[i*17:i*17+17,0] = -500+i*50
-    op[i*17:i*17+17,1] = np.linspace(800,0,17)
-    
 def fun_predict(C_l,C_r,op,z_factor):
     C = np.zeros((len(C_l),4))
     d = 0.5*(distance.euclidean(C_l[0,:], C_l[len(C_l)-1,:])+(distance.euclidean(C_r[0,:], C_r[len(C_r)-1,:])))
@@ -184,20 +123,66 @@ def fun_predict(C_l,C_r,op,z_factor):
     pred[:,2] = np.round(d/z_factor)
     return coefficients, pred
 
-print('\n\nfor image_2000')
-coefficients_2000, Prediction_2000 = fun_predict(C_l_2000,C_r_2000,op,z_factor_2000)
+def main():
+    img_orig_l_2000 = cv2.imread('cal_images\\cal_image_left_2000.tiff')    
+    img_orig_r_2000 = cv2.imread('cal_images\\cal_image_right_2000.tiff')
+    img_orig_l_1980 = cv2.imread('cal_images\\cal_image_left_1980.tiff')    
+    img_orig_r_1980 = cv2.imread('cal_images\\cal_image_right_1980.tiff')
+    img_orig_l_1960 = cv2.imread('cal_images\\cal_image_left_1960.tiff')    
+    img_orig_r_1960 = cv2.imread('cal_images\\cal_image_right_1960.tiff')
+    img_orig_l_1940 = cv2.imread('cal_images\\cal_image_left_1940.tiff')    
+    img_orig_r_1940 = cv2.imread('cal_images\\cal_image_right_1940.tiff')
+    img_orig_l_1920 = cv2.imread('cal_images\\cal_image_left_1920.tiff')    
+    img_orig_r_1920 = cv2.imread('cal_images\\cal_image_right_1920.tiff')
+    img_orig_l_1900 = cv2.imread('cal_images\\cal_image_left_1900.tiff')    
+    img_orig_r_1900 = cv2.imread('cal_images\\cal_image_right_1900.tiff')
 
-print('\n\nfor image_1980')
-coefficients_1980, Prediction_1980 = fun_predict(C_l_1980,C_r_1980,op,z_factor_1980)
+    img_template = cv2.imread('T4.tiff')
 
-print('\n\nfor image_1960')
-coefficients_1960, Prediction_1960 = fun_predict(C_l_1960,C_r_1960,op,z_factor_1960) 
 
-print('\n\nfor image_1940')
-coefficients_1940, Prediction_1940 = fun_predict(C_l_1940,C_r_1940,op,z_factor_1940)
+    C_l_2000, d_l2000 = fun1(img_orig_l_2000, img_template)
+    C_r_2000, d_r2000 = fun1(img_orig_r_2000, img_template)
+    z_factor_2000 = 0.5*(d_l2000+d_r2000)/2000
+    C_l_1980, d_l1980 = fun1(img_orig_l_1980, img_template)
+    C_r_1980, d_r1980 = fun1(img_orig_r_1980, img_template)
+    z_factor_1980 = 0.5*(d_l1980+d_r1980)/1980
+    C_l_1960, d_l1960 = fun1(img_orig_l_1960, img_template)
+    C_r_1960, d_r1960 = fun1(img_orig_r_1960, img_template)
+    z_factor_1960 = 0.5*(d_l1960+d_r1960)/1960
+    C_l_1940, d_l1940 = fun1(img_orig_l_1940, img_template)
+    C_r_1940, d_r1940 = fun1(img_orig_r_1940, img_template)
+    z_factor_1940 = 0.5*(d_l1940+d_r1940)/1940
+    C_l_1920, d_l1920 = fun1(img_orig_l_1920, img_template)
+    C_r_1920, d_r1920 = fun1(img_orig_r_1920, img_template)
+    z_factor_1920 = 0.5*(d_l1920+d_r1920)/1920
+    C_l_1900, d_l1900 = fun1(img_orig_l_1900, img_template)
+    C_r_1900, d_r1900 = fun1(img_orig_r_1900, img_template)
+    z_factor_1900 = 0.5*(d_l1900+d_r1900)/1900
 
-print('\n\nfor image_1920')
-coefficients_1920, Prediction_1920 = fun_predict(C_l_1920,C_r_1920,op,z_factor_1920)
+    op = np.zeros((len(C_l_2000),2))
+                
+    for i in range(21):
+        op[i*17:i*17+17,0] = -500+i*50
+        op[i*17:i*17+17,1] = np.linspace(800,0,17)
+        
+    print('\n\nfor image_2000')
+    coefficients_2000, Prediction_2000 = fun_predict(C_l_2000,C_r_2000,op,z_factor_2000)
 
-print('\n\nfor image_1900')
-coefficients_1900, Prediction_1900 = fun_predict(C_l_1900,C_r_1900,op,z_factor_1900)    
+    print('\n\nfor image_1980')
+    coefficients_1980, Prediction_1980 = fun_predict(C_l_1980,C_r_1980,op,z_factor_1980)
+
+    print('\n\nfor image_1960')
+    coefficients_1960, Prediction_1960 = fun_predict(C_l_1960,C_r_1960,op,z_factor_1960) 
+
+    print('\n\nfor image_1940')
+    coefficients_1940, Prediction_1940 = fun_predict(C_l_1940,C_r_1940,op,z_factor_1940)
+
+    print('\n\nfor image_1920')
+    coefficients_1920, Prediction_1920 = fun_predict(C_l_1920,C_r_1920,op,z_factor_1920)
+
+    print('\n\nfor image_1900')
+    coefficients_1900, Prediction_1900 = fun_predict(C_l_1900,C_r_1900,op,z_factor_1900)    
+
+
+if __name__ == '__main__':
+    main()

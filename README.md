@@ -27,21 +27,18 @@ To excecute 1D spatial cross correlation algortithm, follow these steps:
 5. To toggle the handmade cross correlation, set `use_convolution = True` on line `15`. Currently this method takes approximately one hour. 
 6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. .<br>
 
-To excecute 1D spectral cross correlation algortithm, follow these steps:<br>
-1. Run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
+To excecute 1D spectral cross correlation algortithm, run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
 
 To excecute 2D spatial cross correlation algortithm, follow these steps:<br>
-7. cd imageMatching
-8. Run `python spatial_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. <br>
+1. cd imageMatching
+2. Run `python spatial_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. <br>
 
-
-To excecute 2D spectral cross correlation algortithm, follow these steps:<br>
-9. Run `python spectral_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
+To excecute 2D spectral cross correlation algortithm, run `python spectral_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
 
 ## Depth Mapping
 To excecute the stereo vision depth mapping:
 1. cd exp2_depthMapping
-2. Run `depth_map.py` to process  
+2. Run `depth_map.py` and pass the local location of the desired images. 
 
 ## Moth Eye image analysis
 1. cd extensionMoth

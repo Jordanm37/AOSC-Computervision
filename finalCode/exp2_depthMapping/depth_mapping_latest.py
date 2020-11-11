@@ -219,7 +219,6 @@ def get_SearchArea_Horizontal(image, loc, winSize, winNo):
 
 def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     '''
-    Task 5.
     This  Function Receives two images, pattern and 
     template. It searches for the pattern in the
     template using cross correlation and finds 
