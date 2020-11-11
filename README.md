@@ -25,16 +25,17 @@ To excecute 1D spatial cross correlation algortithm, follow these steps:
 3. To toggle SSD, set `use_SSD = True` on line `13`.
 4. To toggle the library function, set `use_library = True` on line `14`. 
 5. To toggle the handmade cross correlation, set `use_convolution = True` on line `15`. Currently this method takes approximately one hour. 
-6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. 
+6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. .<br>
 
-To excecute 1D spectral cross correlation algortithm, follow these steps:
+To excecute 1D spectral cross correlation algortithm, follow these steps:<br>
 1. Run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
 
-To excecute 2D spatial cross correlation algortithm, follow these steps:
+To excecute 2D spatial cross correlation algortithm, follow these steps:<br>
 7. cd imageMatching
-8. Run `python spatial_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
+8. Run `python spatial_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. <br>
 
-To excecute 2D spectral cross correlation algortithm, follow these steps:
+
+To excecute 2D spectral cross correlation algortithm, follow these steps:<br>
 9. Run `python spectral_2D_image_match.py` to process files `wally_puzzle_rocketman.png` and `wallypuzzle_png.png`. 
 
 ## Depth Mapping
