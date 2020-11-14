@@ -138,24 +138,6 @@ def zero_padding(C, x_pad, y_pad):
     ----------------
         padded  Padded template array.  
      """        
-
-    # m,n = C.shape
-    
-    # #needs to be int to work not float make this into a round up if float function or find libray function 
-    # if x_pad% 2 == 0:
-    #     x_pad = int(x_pad)
-    # else: 
-    #     x_pad = int( x_pad + 0.5 )
-
-    # if y_pad% 2 == 0:
-    #     y_pad = int(y_pad)
-    # else: 
-    #     y_pad = int( y_pad + 0.5 )
-           
-    # c_y = np.zeros((m +2*x_pad , n+2*y_pad ),dtype=C.dtype)
-    # c_y[x_pad:-x_pad:, y_pad:-y_pad] = C
-    # return c_y
-    
     
     x_pad = int(np.round(x_pad))
     y_pad = int(np.round(y_pad))
@@ -202,25 +184,8 @@ def crr_2d( pattern, template):
 
     return real_corr
 
-def find_offset(pattern, template): 
-    """
-    2D array offset index and value from cross correlation 
- 
-    Inputs:
-    ----------------
-        pattern   Pattern must be non empty 
 
-        template   Template, search space with similar dimensionality to pattern
-        
-    Output:
-    ----------------
-        (best_score, best_match)  Index of offset found from cross correlation
-     """     
-
-    '''
-    new resizing for odd sides
-    '''
-    
+def resize_even(pattern, template):   
     extra_row = 0
     extra_col = 0
     a = pattern
@@ -239,8 +204,28 @@ def find_offset(pattern, template):
     if b.shape[1]%2!=0:
         b = np.hstack((b,np.zeros( (b.shape[0],1) )))
 
-    pattern = a
-    template = b
+    return a, b
+   
+
+def find_offset(pattern, template): 
+    """
+    2D array offset index and value from cross correlation 
+ 
+    Inputs:
+    ----------------
+        pattern   Pattern must be non empty 
+
+        template   Template, search space with similar dimensionality to pattern
+        
+    Output:
+    ----------------
+        (best_score, best_match)  Index of offset found from cross correlation
+     """     
+
+    '''
+    new resizing for odd sides
+    '''
+    pattern, template = resize_even(pattern, template)
 
     real_corr = crr_2d( pattern, template) 
     best_match , match_value = find_best_match( real_corr )

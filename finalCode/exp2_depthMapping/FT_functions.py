@@ -127,27 +127,27 @@ def zero_padding(input_array, x_pad, y_pad):
         padded  Padded template array.  
      """        
 
-    m,n = input_array.shape
+    # m,n = input_array.shape
     
-    #needs to be int to work not float make this into a round up if float function or find libray function 
-    if x_pad% 2 == 0:
-        x_pad = int(x_pad)
-    else: 
-        x_pad = int( x_pad + 0.5 )
+    # #needs to be int to work not float make this into a round up if float function or find libray function 
+    # if x_pad% 2 == 0:
+    #     x_pad = int(x_pad)
+    # else: 
+    #     x_pad = int( x_pad + 0.5 )
 
-    if y_pad% 2 == 0:
-        y_pad = int(y_pad)
-    else: 
-        y_pad = int( y_pad + 0.5 )
+    # if y_pad% 2 == 0:
+    #     y_pad = int(y_pad)
+    # else: 
+    #     y_pad = int( y_pad + 0.5 )
            
-    c_y = np.zeros((m +2*x_pad , n+2*y_pad ),dtype=input_array.dtype)
-    c_y[x_pad:-x_pad:, y_pad:-y_pad] = input_array
-    return c_y
+    # c_y = np.zeros((m +2*x_pad , n+2*y_pad ),dtype=input_array.dtype)
+    # c_y[x_pad:-x_pad:, y_pad:-y_pad] = input_array
+    # return c_y
        
-    # x_pad = int(np.round(x_pad))
-    # y_pad = int(np.round(y_pad))
+    x_pad = int((x_pad))
+    y_pad = int((y_pad))
     
-    # return np.pad(input_array, [(x_pad, ), (y_pad, )], mode='constant')
+    return np.pad(input_array, [(x_pad, ), (y_pad, )], mode='constant')
 
 def nextpow2(number):
 
@@ -171,7 +171,7 @@ def crr_2d( pattern, template):
     ----------------
         real_corr  Cross correlation array
      """  
-    '''Old padding'''
+
     
     # move into zero padding function
     side_edge_pad = template.shape[0] - pattern.shape[0] 
@@ -186,32 +186,38 @@ def crr_2d( pattern, template):
     #a * b. Offset pattern due to padding
     width = pattern_fft_conj.shape[0]
     height = pattern_fft_conj.shape[1]
-    product = pattern_fft_conj[0:width, 0:height-1] *  template[0:width, 0:height]      
+    product = pattern_fft_conj[0:width, 0:height] *  template[0:width, 0:height]      
         
-    ccr = matrix_ifft(product)    
+    # ccr = matrix_ifft(product) 
+    template_fft = np.fft.fft2( template )
+    pattern_fft = np.fft.fft2( pattern ) 
+    pattern_fft_conj = np.flip( pattern_fft )    
+    ccr = np.fft.ifft2(product)   
     real_corr = np.real(ccr) 
+
+    
+    plt.imshow(pattern_padded)
+    plt.title("pattern_padded")
+    plt.show()
+    plt.imshow(template)
+    plt.title("template")
+    plt.show()
+    plt.imshow( np.fft.fftshift( np.imag(template_fft ) ) )
+    plt.title("template_fft")
+    plt.show()
+    plt.imshow( np.fft.fftshift( np.imag(pattern_fft_conj ) ) )
+    plt.title("pattern_fft_conj")
+    plt.show()
+    plt.imshow( np.fft.fftshift( np.imag(ccr ) ) )
+    plt.title("ccr")
+    plt.show()
+    plt.imshow(real_corr)
+    plt.title("real_corr")
+    plt.show()
 
     return real_corr
 
-def find_offset(pattern, template): 
-    """
-    2D array offset index and value from cross correlation 
- 
-    Inputs:
-    ----------------
-        pattern   Pattern must be non empty 
-
-        template   Template, search space with similar dimensionality to pattern
-        
-    Output:
-    ----------------
-        (best_score, best_match)  Index of offset found from cross correlation
-     """     
-
-    '''
-    new resizing for odd sides
-    '''
-    
+def resize_even(pattern, template):  
     extra_row = 0
     extra_col = 0
     
@@ -232,8 +238,27 @@ def find_offset(pattern, template):
     if tempTemplate.shape[1]%2!=0:
         tempTemplate = np.hstack((tempTemplate,np.zeros((tempTemplate.shape[0],1))))
 
-    pattern = tempPattern
-    template = tempTemplate
+    return tempPattern, tempTemplate
+
+def find_offset(pattern, template): 
+    """
+    2D array offset index and value from cross correlation 
+ 
+    Inputs:
+    ----------------
+        pattern   Pattern must be non empty 
+
+        template   Template, search space with similar dimensionality to pattern
+        
+    Output:
+    ----------------
+        (best_score, best_match)  Index of offset found from cross correlation
+     """     
+
+    '''
+    new resizing for odd sides
+    ''' 
+    pattern, template = resize_even(pattern, template)
 
     real_corr = crr_2d(pattern, template) 
 
@@ -243,3 +268,45 @@ def find_offset(pattern, template):
     secondVal = best_match[1] - 2 * pattern.shape[1] - extra_col
     
     return (firstVal, secondVal), match_value
+
+
+def visualize_results(pattern,pattern_ms,template,template_ms):
+    '''
+    Visualize pattern and template images   
+    '''
+        
+    # Intesity histogram plot
+    lum_img_1 = pattern_ms[:, :]
+    lum_img_2 = template_ms[:, :]  
+    
+    # plots of original and greyscale
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(2,2,1)
+    plt.imshow(pattern)
+  
+    plt.subplot(2,2,2)
+    plt.imshow(template)
+    
+    plt.subplot(2,2,3)
+    plt.imshow(pattern_ms)
+    
+    plt.subplot(2,2,4)
+    plt.imshow(template_ms)
+    
+    #plot of intensity
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)
+    plt.imshow(pattern_ms)
+    
+    plt.subplot(1,2,2)
+    plt.imshow(template_ms)
+    #plot_save("intensityPlot")
+    
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplot(1,2,1)  
+    plt.hist(lum_img_1.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+    plt.title("Pixel intensity of pattern")
+    plt.subplot(1,2,2)  
+    plt.hist(lum_img_2.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
+    plt.title("Pixel intensity of template")
+    plt.show()

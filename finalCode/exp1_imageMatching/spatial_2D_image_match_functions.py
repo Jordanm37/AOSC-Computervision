@@ -214,65 +214,6 @@ def read_image(image_name):
 
     return img
 
-def visualise_signals(s1_Data, s2_Data):
-    '''
-    Visualize signals:
-    '''
-
-    # fig = plt.figure(figsize=(10, 4))
-    # SubPlotRow=1
-    # SubPlotCol=3
-    # npts = len( s1_Data )
-    # t = np.linspace(0, len(s1_Data ), npts)
-
-    # plt.subplot(SubPlotRow,SubPlotCol,1)
-    # plt.plot(t,s1_Data, color = 'red')
-    # plt.title("Sensor-1 Data Plot")
-    # plt.grid()
-
-    # plt.subplot(SubPlotRow,SubPlotCol,2)
-    # plt.plot(t,s2_Data, color = 'blue')
-    # plt.title("Sensor-2 Data Plot")
-    # plt.grid()
-
-    # plt.subplot(SubPlotRow,SubPlotCol,3)
-    # plt.plot(t,s1_Data, color = 'red')
-    # plt.plot(t,s2_Data, color = 'blue')
-    # plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
-    # plt.grid()
-    # plt.show()
-
-    fig = plt.figure(figsize=(10, 4))
-    npts = len( s1_Data )
-    t = np.linspace(0, len(s1_Data ), npts)
-
-    plt.plot(t,s1_Data, color = 'red')
-    plt.xlabel("time (s)")
-    plt.ylabel("Amplitude")
-    plt.title("Sensor-1 Data Plot")
-    plt.grid()
-    plot_save("Sensor-1 Data Plot")
-    plt.show()
-
-    fig = plt.figure(figsize=(10, 4))
-    plt.plot(t,s2_Data, color = 'blue')
-    plt.xlabel("time (s)")
-    plt.ylabel("Amplitude")
-    plt.title("Sensor-2 Data Plot")
-    plt.grid()
-    plot_save("Sensor-2 Data Plot")
-    plt.show()
-
-    fig = plt.figure(figsize=(10, 4))
-    plt.plot(t,s1_Data, color = 'red')
-    plt.plot(t,s2_Data, color = 'blue')
-    plt.xlabel("time (s)")
-    plt.ylabel("Amplitude")
-    plt.title("Sensor-1 and Sensor-2 Combined Data Plot")
-    plt.grid()
-    plot_save("Sensor-1 and Sensor-2 Combined Data Plot")
-    plt.show()
-
 def visualize_results(pattern,pattern_ms,template,template_ms,horCen,vertCen,image_cross,):
     '''
     Visualize pattern and template images   

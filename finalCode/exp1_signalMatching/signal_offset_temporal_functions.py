@@ -93,12 +93,12 @@ def calculate_energy( p, g_slice ):
     Output: 
         norm      Scalar  Float of variance for a given slice of the template/search and pattern
      """
-    a = g_slice ** 2
+    g_slice_sq = g_slice ** 2
     # b = a.sum()
-    b = a.sum()
-    c = p * b
+    g_slice_sum = g_slice_sq.sum()
+    product = p * g_slice_sum
     #norm = np.sqrt( p * ( g_slice**2).sum() )
-    norm = np.sqrt(c) 
+    norm = np.sqrt(product) 
     return norm
 
 #@jit(nopython=True)
