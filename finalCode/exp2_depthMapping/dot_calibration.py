@@ -17,9 +17,7 @@ def save_plot(label):
     plt.savefig(os.path.join("figures","calibration",label + ".png"))
     
 def fun1(img_orig, img_template, saved_image_name):
-    """
-    
-    
+    """ 
     Inputs:
     ----------------
         img_orig          BGR Image, image to search for template 

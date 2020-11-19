@@ -6,7 +6,19 @@ from numpy import pi, exp, sqrt
 import os
 
 def convert_gray(image):
-
+    """
+    Convert RGB image to Gray-Scale using formula:
+    0.2989 * R + 0.5870 * G + 0.1140 * B
+    
+    Inputs:
+    ----------------
+        RGB Image
+    
+    Output:
+    ----------------   
+        Gray-Scale Image    
+    
+    """
     image = 0.2989 * image[:, :, 0] + 0.5870 * image[:, :, 0] + 0.1140 * image[:, :, 0]   
     
     return image
@@ -35,7 +47,22 @@ def calculate_score( pattern, template):
     return score
 
 def zero_padding(input_array, padlen_x, padlen_y):
-
+    """
+    Zero pad 2D array by placing it in centre of zeroed matrix of padded size.
+ 
+    Inputs:
+    ----------------
+        array   The array to pad
+ 
+        padlen_x    Padwidth of the rows. Floats will be rounded up.
+        
+        padlen_y    Padwidth of the columns. Floats will be rounded up.
+ 
+    Output:
+    ----------------
+        padded  Padded template array.  
+     """        
+    
     m,n = input_array.shape
     padlen_x = int(np.round(padlen_x))
     padlen_y = int(np.round(padlen_y))
@@ -45,7 +72,21 @@ def zero_padding(input_array, padlen_x, padlen_y):
     return padded
 
 def find_best_match( score ):
+    """
+    Find max value in 2D array and its index
+ 
+    Inputs:
+    ----------------
+        score   2D target array
+        
+    Output:
+    ----------------
+        index   Index of largest element 
+        
+        max_element Max Element in the array
 
+     """   
+     
     max_element = np.amax( score )
 
     index = np.unravel_index(np.argmax( score, axis=None), score.shape) 
@@ -75,7 +116,19 @@ def resize_even(pattern, template):
     return a, b    
 
 def n_corr2d( pattern, template):
+    """
+    Cross correlation of two 2D arrays using FFt to convolve spatial arrays
+ 
+    Inputs:
+    ----------------
+        pattern   Pattern must be non empty 
 
+        template   Template, search space with similar dimensionality to pattern
+        
+    Output:
+    ----------------
+        real_corr  Cross correlation array
+     """  
     #Pad and initalise arrays for calculation  
     pattern, template = resize_even(pattern, template)
     template_padded = zero_padding( template, pattern.shape[0]/2, pattern.shape[1]/2 )
@@ -103,7 +156,17 @@ def n_corr2d( pattern, template):
     return norm_scores
 
 def read_image(image_name):
-
+    """
+    Read image 
+ 
+    Inputs:
+    ----------------
+        image_name   Image path 
+ 
+    Output:
+    ----------------
+        img  Image as multi channel array
+       """ 
     img = mpimg.imread(image_name)
 
     return img

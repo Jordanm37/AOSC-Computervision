@@ -21,7 +21,6 @@ def main():
     template_ms = template_gray - np.mean(template_gray)
     visualize_results(pattern, pattern_ms, template, template_ms)
 
-
     #Dot detection
     corr = n_corr2d(pattern_ms, template_ms)
     dot_detection(corr, img)
