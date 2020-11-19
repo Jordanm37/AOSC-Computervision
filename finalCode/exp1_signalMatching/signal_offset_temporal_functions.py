@@ -6,14 +6,7 @@ import matplotlib.pyplot as plt
 from itertools import islice
 import pdb
 
-def fewer_data_points(data_1, data_2, nth):
-#Debugging size for smaller runs 
-
-    return data_1[::nth],data_2[::nth] 
-
-#version 2 SSD
-#Added functions to improve computation time 
-
+#SSD
 #1
 def calc_mean(lst):
     Sum = 0
@@ -93,15 +86,12 @@ def calculate_energy( p, g_slice ):
     Output: 
         norm      Scalar  Float of variance for a given slice of the template/search and pattern
      """
-    g_slice_sq = g_slice ** 2
-    # b = a.sum()
-    g_slice_sum = g_slice_sq.sum()
-    product = p * g_slice_sum
-    #norm = np.sqrt( p * ( g_slice**2).sum() )
+    g_sliced_sq = g_slice ** 2
+    g_sliced_sq_sum = g_sliced_sq.sum()
+    product = p * g_sliced_sq_sum
     norm = np.sqrt(product) 
     return norm
 
-#@jit(nopython=True)
 def calculate_score( pattern, template):
     """
     Correlation for 1D slice of N size template/search array with pattern at given offset. Sum(f[i]*g[i+m])
@@ -118,38 +108,7 @@ def calculate_score( pattern, template):
     ----------------
         score  Scalar float of correlation score between pattern and template slice
      """    
-
-    # score = 0 
-    # i = 0
-    # lenp = len(pattern)
-    # while i < lenp:
-    # #for i in range(len( pattern )):
-    #     p = pattern[i] 
-    #     t = template[i + offset]
-    #     i += 1
-    #     if t > 0 and p > 0:
-    #     	score += p * t
-    # return score
-
-    # begin slice: max(p, offset) 
-    # end slice: min(p + offset, p + t -1)
-
-    # pattern *template[max(p, offset):min(p + offset, p + t -1) ]
-
-    # p[p-1] * t[p-1]
-    # p[p-2:p-1] * t[p-1: p]]
-    # p[p-3:p-1] * t[p-1: p+1]
-    # p[p-3:p-1] * t[p:p+2]
-
     return (pattern * template).sum()
-        
-    # p = pattern.shape[0]
-    # t = pattern.shape[0]
-
-    # t_slice = template[offset : np.min(t, offset + p)]
-    # p_slice = pattern[:t_slice.shape[0]]
-
-    # return np.dot(t_slice, p_slice)
 
 def zero_padding( pattern, template ):
     """
@@ -173,7 +132,6 @@ def zero_padding( pattern, template ):
 
     return template_padded
     
-#function that finds the largest element and its index in an array
 def find_best_match( score ):
     """
     Find max value in 1D array and its index
@@ -190,10 +148,7 @@ def find_best_match( score ):
 
      """       
     s = np.array( score )
-    try:
-        max_element = np.amax( s )
-    except:
-        print( "Line 45 Error", score )
+    max_element = np.amax( s )
     index = np.argmax( s )
 
     return index, max_element
@@ -212,21 +167,14 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
     ----------------
         norm_scores  Normed cross correlation array
      """  
-     
     len_p = len(pattern)
-    
     #Pad and initalise arrays for calculation   
     template_padded = zero_padding( pattern, template )
     corr_len = len( template_padded ) - len_p
-    #scores = [0.0] * corr_len #must cast as float for later calculations, prevent error (numba requires all floats)
-    #norm = [0.0] * corr_len 
     norm_scores = [0.0] * corr_len 
     
     #Precalculate pattern squared-sum and store, reduces calculation time by half 
     pattern_arr = np.array( pattern ) 
-    
-    #pdb.set_trace()
-    
     pattern_sq_sum = ( pattern_arr ** 2 ).sum() #to use in norm - memoised values to reduce number of computations    
     template_pad_arr = np.array( template_padded )
     #Find normed cross correlation from convolution of pattern with template array slices
@@ -234,8 +182,8 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
     
     t_start = time.time()
     #If speed is true, slices are taken without padding for the cross-corr
-    
     for i in range( corr_len ):
+        print("Calculating Cross correlation: .......")
         t_step = time.time()
         g_slice = template_pad_arr[ i : i + len_p ] 
         if speed:
@@ -243,7 +191,7 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
             temp_slice_end = min(len_t -len_p , i + len_p)
             pattern_slice_start = max(0, len_p -1 - i)
             pattern_slice_end = min(len_p, len_p - ( (i + len_p) - (len_t - len_p)  ))
-            #Add short explanation 
+            # slice at location overlap of pattern and template when located at the begining and end of template
             temp_slice = template_pad_arr[ temp_slice_start : temp_slice_end ] 
             pat_slice = pattern_arr[pattern_slice_start : pattern_slice_end] 
             score_i = calculate_score( pat_slice, temp_slice) 
@@ -253,7 +201,7 @@ def norm_cross_corr( pattern, template, speed ): #change later to signal 1 and 2
         #Whenever the norm is zero, the cross correlation is not calculated 
         if  score_i != 0 : 
             norm_i = calculate_energy( pattern_sq_sum, g_slice)
-            norm_scores[i] = score_i / norm_i # division could be optimized?
+            norm_scores[i] = score_i / norm_i 
         # if i%100 == 0:
         #     tn = time.time() - t_step
         #     print("time= ",tn)
@@ -276,9 +224,7 @@ def find_offset( sig1, sig2, speed ):
      """    
      
     correlation_arr = norm_cross_corr( sig1, sig2, speed )  
-
-    idx, maxval = find_best_match( correlation_arr ) #clean this up
-    #print( best_match )
+    idx, maxval = find_best_match( correlation_arr ) 
 
     # subtract padding: - (len - 1)
     offset = idx - len( sig1 ) + 1
@@ -301,8 +247,6 @@ def read_file( fileName ):
         "Read File from Line 2 or Skip Header Row." 
         Stack Overflow, 1 May 1960, stackoverflow.com/questions/4796764/read-file-from-line-2-or-skip-header-row.    
     """  
-    
-    #     data = file.read()
     data = open( fileName ,"r") 
     data_list = [float(line.strip() ) for line in islice(data, 1, None)] 
     data.close()
@@ -378,6 +322,15 @@ def print_summary(title, NormCCR, maxlag, t_total):
     print("Normalized Cross Correlation = %.3f"%NormCCR)
     print("\nmax correlation is at lag %d" %maxlag)
     print( "\nRun time = %.2f"%t_total )
+
+def print_calculation_summary( offset, sample_period, speed_sound, Freq ):
+    offset_time = offset * sample_period
+    sensor_distance = abs(offset * sample_period * speed_sound)
+    print("\nSignal separation summary")
+    print("\nFreq. = %d"%Freq)  
+    print("Off-Set = %d"%offset)
+    print("Off-Set Time = %.3f"%offset_time)
+    print("\nDistance between two sensors = %.2f meters"%sensor_distance)       
 
 def init_vars(npts, add=1):
     lags = np.arange(-npts + add, npts)

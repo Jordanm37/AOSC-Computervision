@@ -31,13 +31,12 @@ def read_file( fileName ):
 
 def mean_dif(pattern):
     """
-    Find find shift for 1D 
+    Find mean shift for 1D 
  
     Inputs:
     ----------------
         pattern   Pattern must be non empty 
 
-    
     Output:
     ----------------
         norm_scores  Normed cross correlation array
@@ -117,22 +116,13 @@ def corr(pattern,template):
         corr   Correlation array
 
      """  
-
+     
     fft_1 = arr_fft(pattern)
     fft_2 = arr_fft(template)
     fft_2_conj = arr_complex_conj(fft_2)
-    #fft_2_conj = np.flip(fft_2)
-
     corr = arr_ifft(fft_2_conj * fft_1)
     corr /= np.max(corr)
-    #print(np.linalg.norm(np.imag(corr)))
     corr = np.real(corr)
-
-    # np.real_if_close(corr)
-
-    #real=np.isreal(corr)              #Boolean condition for real part
-    #real_array=corr[real]             #Storing it in variable using boolean indexing
-    #real_array = np.real_if_close(corr)
 
     return corr
 
@@ -140,10 +130,7 @@ def find_best_lag(data_1, data_2,lags):
    
     data_1_shift = mean_dif(data_1)
     data_2_shift = mean_dif(data_2)
-    # len_1 = len(data_1_shift)
-    # len_2 = len(data_2_shift)
-    # # print(len_1, len_2)
-    #find best lag
+
     time_start = time.time()
     corr_sig_1_2 = corr( data_1_shift, data_2_shift)
     t_total = time.time() - time_start
@@ -244,6 +231,14 @@ def visualise_ccr(lags,n_ccor, label):
     plt.grid()
     plot_save(label)
     plt.show()
+
+def print_summary(Fs, offset, offset_sec, sensor_distance, t_total):
+    print("\nFreq. = %d"%Fs)
+    print("\nMax correlation is at lag %d" %offset)
+    print("Off-Set = %d"%offset)
+    print("Off-Set Time = %.3f"%offset_sec)
+    print("\nDistance between two sensors = %.2f meters"%sensor_distance)              
+    print( "\nRun time = %.2f"%t_total )    
 
 def plot_save(label):
     plt.tight_layout()

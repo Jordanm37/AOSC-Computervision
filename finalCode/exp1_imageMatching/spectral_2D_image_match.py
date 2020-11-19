@@ -9,13 +9,16 @@ def main():
 
     pattern = read_image(patternDir)
     template = read_image(templateDir)
-      
+
+    # convert to grayscale  
     pattern_gray = convert_gray(pattern )
     template_gray = convert_gray(template)
-    
+
+    # take mean shift
     pattern_s = pattern_gray - np.mean(pattern_gray)
     template_s = template_gray - np.mean(template_gray)
-  
+
+    # find offset
     start = time.time()
     image_cross, image_cross_value = find_offset(pattern_s, template_s)
     end = time.time()
@@ -23,21 +26,14 @@ def main():
     #function to find image centre
     vert_cen = pattern_gray.shape[1] / 2
     hor_cen = pattern_gray.shape[0] / 2
+    visualize_results(pattern, pattern_s, template, hor_cen, vert_cen, image_cross)
 
     #centre of pattern
     print("Offset_x_co = ", image_cross[1] + hor_cen, "Offset_y_co = ", image_cross[0] + vert_cen, "value =", image_cross_value)
     #top left corner of pattern image
-    print("Offset_x_co = ", image_cross[1], "Offset_y_co = ", image_cross[0], "value =", image_cross_value)
-    print("run time = ", end - start )
-    
-    visualize_results(pattern, pattern_s, template, hor_cen, vert_cen, image_cross)
+    # print("Offset_x_co = ", image_cross[1], "Offset_y_co = ", image_cross[0], "value =", image_cross_value)
+    # print("run time = ", end - start )
 
 if __name__ == '__main__':
     main()
-
-"""
-Offset_x =  528 Offset_y =  982 value = 0.520092887633342
-<class 'numpy.ndarray'>
-"""
-
 

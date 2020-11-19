@@ -34,7 +34,9 @@ def files_w_extn(dir_p, ext_n):
   
 def readAndProcess(imLoc, display=display_default):
     """
-    Read and Process the images 
+    Read and Process the images. Convert from default openv cv BGR to RGB.
+    Apply filters to reduce image noise, improve intensity gradient, and sharpens
+    edges within image. 
  
     Inputs:
     ----------------
@@ -44,18 +46,23 @@ def readAndProcess(imLoc, display=display_default):
     
     Output:
     ----------------
-        rgb, gry, gry_filtered, gry_blurred, img_orig     Display plots of Original Image, rgb image,grey image, gry_filtered image, gry_blurred image, 
+        rgb, gry, gry_filtered, gry_blurred, img_orig     Display plots of Original Image, \
+                                rgb image,grey image, gry_filtered image, gry_blurred image, 
         
     """
     
     img_orig = cv2.imread(imLoc)
-    rgb = cv2.cvtColor(img_orig, cv2.COLOR_BGR2RGB)
+    # COnvert from openCV format
+    rgb = cv2.cvtColor(img_orig, cv2.COLOR_BGR2RGB)patt
+    # To convert image to gray scale after applying filter
     gry = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
     
     kernel_sharpening = np.array([[-1,-1,-1], [-1, 9,-1], [-1,-1,-1]])
-    
+    # To convert image to gray scale after sharpening
     gry_filtered = cv2.filter2D(gry, -1, kernel_sharpening)
+    # Blur using a median filter
     gry_blurred = cv2.medianBlur(gry,1) 
+
     
     if display:
         plt.imshow(img_orig)
@@ -65,8 +72,17 @@ def readAndProcess(imLoc, display=display_default):
 
 def getCirclesCN(locs, rgb_testim, ori_im, display=display_default):
     """
-    Draw and Display circles of original image after applying CCORR_NORMED Method 
- 
+    First method to find location of circles using cross correlation with a template.
+    Draw and Display circles of original image after applying CCORR_NORMED Method.
+    Requires threshold to find matched elements of cross correlation matrix as the loc
+    Uses the sharpened grayscale template. 
+
+    To avoid detection of same circle many times, when the distance between any 
+    two is less that the definition of distinct circles, since sliding template 
+    with match template, <1.5 so only one circle detected.
+    c is the circle. if distance between two circle is less than <1.5, then same circle.
+    then made as 0. 
+  
     Inputs:
     ----------------
         locs         Location of the desired image
@@ -80,37 +96,34 @@ def getCirclesCN(locs, rgb_testim, ori_im, display=display_default):
         rgb, gry, gry_filtered, gry_blurred, img_orig     Display plots of Original Image, rgb image,grey image, gry_filtered image, gry_blurred image, 
     
     """
-    
-    # print(len(locs))
-    
-    c = np.asarray((0,0))
+ 
+    c = np.asarray((0,0)) 
     c = c.reshape(1,len(c))
-    w, h = tl_gFltrd.shape[::-1]
-    n = 0
+    w, h = tl_gFltrd.shape[::-1] # Width and height of circles
+    n = 0 # Initisalise the circle count
 
+    # To count number of circle that are above threshold from ccr matrix
     for pt in zip(*locs[::-1]):
         c1 = np.asarray(pt)
         c1 = c1.reshape(1, len(c1))
         c = np.append(c,c1,axis = 0)    
         n = n+1 
-        # print(pt, n)
-        
-    c = np.delete(c, 0, 0)
     
-    # print("first for ended")
-    
+    # Delete first row which is zero since calculating euclidean distance
+    c = np.delete(c, 0, 0) # first zero for first row and second zero for axis=0 (row) 
+
     for i in range(n):
-        pt_p = c[i,]
+        pt_p = c[i,] # pt_t is a point in the image
         for j in range(i+1,n):
             pt = c[j,]
-            d = distance.euclidean(pt_p, pt)
-            if d < w/1.5:
+            d = distance.euclidean(pt_p, pt) # Calculate distance between two points
+            if d < w/1.5: # Threshold separation for distinct circles
                 c[j,] = 0
-    # print("2nd for ended")
     
-    circles = c[~(c==0).all(1)]
+    circles = c[~(c==0).all(1)] #circles is replacement without the deleted circle c==0/copy
     rgb1 = np.copy(rgb_testim)
-    
+
+    # To print and display detected circles
     for i in range(len(circles)):
         cv2.circle(rgb1, (int(round(circles[i,0] + w/2)), int(round(circles[i,1] + h/2))), 1, (0,255,255), 5)
         
@@ -126,7 +139,9 @@ def getCirclesCN(locs, rgb_testim, ori_im, display=display_default):
 
 def getCirclesHC(img_orig, rgb, greyBlurd, min_dist, param_1, param_2, display=display_default):
     """
-    Draw and Display circles after applying Hough circle Method 
+    Draw and Display circles after applying Hough circle Method.
+    Take a measure of a circles in the pixel and determin the circles in the images 
+    based on geometry and intensity gradients of the pixels not pattern matching.
  
     Inputs:
     ----------------
@@ -149,15 +164,16 @@ def getCirclesHC(img_orig, rgb, greyBlurd, min_dist, param_1, param_2, display=d
         circles, rgb2     Display plots of Original Image, rgb2 image
 
     """
-   
+    # param1 is based on image quality, max radius is based on scale of image so does not include the small dark wedges
     circles = cv2.HoughCircles(greyBlurd, cv2.HOUGH_GRADIENT, dp = 1, minDist = min_dist,
                           param1=param_1, param2=param_2, minRadius=0, maxRadius=18)
                           
     detected_circles = np.uint16(np.around(circles))
     rgb2 = np.copy(rgb)
     
-    for (x, y ,r) in detected_circles[0, :]:
-        cv2.circle(rgb2, (x, y), 2, (255, 0, 255), 5)
+    # To display detected circles
+    for (x, y ,r) in detected_circles[0, :]: # Scaning through pixel locations
+        cv2.circle(rgb2, (x, y), 2, (255, 0, 255), 5)  # x,y location and radius (can set to r to have radius be for individual circles)
         
     count_1 = len(detected_circles[0, :])
     
@@ -173,13 +189,15 @@ def getCirclesHC(img_orig, rgb, greyBlurd, min_dist, param_1, param_2, display=d
     
 def avgCircleDiameter(scale_given, pixel_for_scale, circles, display=display_default):
     """
-    Get Average circle diameter in pixel and micrometer, detected using hough circle method 
+    Get Average circle diameter in pixel and micrometer, detected using hough circle method.
+    Enter scale of the image manually to get diameter in micrometere.
+    In this example 84 pixels is equal to 3 micrometer.
  
     Inputs:
     ----------------
-        scale_given         3
+        scale_given         3 In micrometers
 
-        pixel_for_scale     84
+        pixel_for_scale     84 In pixels
 
         circles             calculated by Hough Circle Method
 
@@ -190,7 +208,7 @@ def avgCircleDiameter(scale_given, pixel_for_scale, circles, display=display_def
         pixel_Diameter, actual_Diameter     Generate the pixel for scale diameter and original diameter of the circle
     
     """
-    
+    ## The distribution of Sphere diameter and average in pixels
     Radius = circles[0,:,2]
     Diameter = Radius * 2
     pixel_Diameter = np.mean(Diameter)
@@ -226,15 +244,17 @@ def circleCoveredPercentage(gry,display=display_default):
     
     s0 = np.concatenate(gry)
     hist4, gray_dist = np.histogram(s0, bins=256)
-    (thresh, img_bw) = cv2.threshold(gry, 60, 255, cv2.THRESH_BINARY)
+    # Binarisation on threshhold for upper and lower bound
+    (thresh, img_bw) = cv2.threshold(gry, 60, 255, cv2.THRESH_BINARY)  # Here 60 is threshold
     
     s1 = np.concatenate(img_bw)
     hist2, bw_data = np.histogram(s1, bins=2)
     
     circle_white = hist2[1]
     no_circle_black = hist2[0]
-    
+    # The percentage of the image that is covered with the spheres
     circle_percentage = circle_white / ( circle_white+no_circle_black ) * 100 
+    # The percentage of the image that is covered with no spheres
     no_circle_percentage = no_circle_black / ( circle_white+no_circle_black ) * 100
 
     if display:
@@ -254,7 +274,7 @@ def circleCoveredPercentage(gry,display=display_default):
 
 def imageGoodOrBad(percent,thresh):
     """
-    Check whether Resulted Image is good or bad 
+    Check whether resulted Image is good or bad 
  
     Inputs:
     ----------------
@@ -295,7 +315,8 @@ def sphereSepReflct(scale_given, pixel_for_scale, numOfCircles, circles, meanDia
         
     Output:
     ----------------
-       avgSphereSepPixel, avgSphereSepMM, round(reflection*100,2), circleDiameters, distances   returrns the average sphere separation  in pixel and mmicrometer
+       avgSphereSepPixel, avgSphereSepMM, round(reflection*100,2), circleDiameters, distances\
+                                 returns the average sphere separation  in pixel and micrometer
     
     """
     
@@ -318,12 +339,13 @@ def sphereSepReflct(scale_given, pixel_for_scale, numOfCircles, circles, meanDia
         circleDiameters[i2, :] =  np.mean(a2)
         
     cd = circleDiameters[~np.isnan(circleDiameters)]
-    circleDiameters = np.nan_to_num(circleDiameters)
+    circleDiameters = np.nan_to_num(circleDiameters) # 
     
     hist3, ss_dist = np.histogram(cd, bins = 12)    
     avgSphereSepPixel = np.mean(cd)
     avgSphereSepMM = ((scale_given * avgSphereSepPixel) / pixel_for_scale)
-    
+
+    ## The reflection, R, for a surface in an image
     reflection = np.square((((0.793 * (meanDiameter / avgSphereSepPixel) ** (2)) + 1) ** (3.0/2.0)- (1.52)) /
                 (((0.793 * ( meanDiameter / avgSphereSepPixel ) ** (2)) + 1) ** (3.0/2.0) + (1.52)))
                 
@@ -356,10 +378,6 @@ def sizeOfUncoveredRegion(rgb, mean_Diameter, img_bw, display=display_default):
        countour_list   returns the contour list
        
     """
-    
-    #contours, hierarchy = cv2.findContours(
-    
-    #note first return is image, changed because new version
     _, contours, hierarchy = cv2.findContours( 
         image = img_bw,
         mode = cv2.RETR_TREE,
@@ -394,7 +412,7 @@ def sizeOfUncoveredRegion(rgb, mean_Diameter, img_bw, display=display_default):
 
 def numDoubleLayers(dist, circles, rgb, mean_Diameter, circleDiameters, display=display_default):
     """
-    Count the double layers 
+    Count the double layers (a sphere above the base layer) 
  
     Inputs:
     ----------------
@@ -529,11 +547,10 @@ if __name__ == "__main__":
         tt_rgb, tt_gry, tt_gFltrd, tt_gblrd, tt_ori = readAndProcess(testImage)
         tl_rgb, tl_gry, tl_gFltrd, tl_gblrd, tl_ori = readAndProcess(tmplImage)
 
-
-        thresh = 0.65
+        # Set threshold parameter (0.5-0.95) by trial and error method after visualizing 
+        thresh = 0.65 
         res = cv2.matchTemplate(tt_gFltrd, tl_gFltrd, cv2.TM_CCORR_NORMED)
-
-
+        # Return array of all res which is the template search of image that are above threshold cross correlation value
         locs = np.where(res >= thresh)    
 
         #Get circles using method : CCORR_NORMED
@@ -573,6 +590,7 @@ if __name__ == "__main__":
         img_bw=imgBW, display=display_default)
         print("Number of Contours found :: " + str(len(contour_list)))
 
+        # Characterise images by size of grains - number of hexagon groups, or triangular groups, ect
         allcounts, dlCount = numDoubleLayers(dist = distances, circles=circlesHC, rgb=tt_rgb,\
         mean_Diameter=circlesHCDiameterPixel, circleDiameters=cds,display=display_default)
 

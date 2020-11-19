@@ -55,12 +55,9 @@ def find_best_match(score):
 
      """   
      
-    #try:
     max_element = np.amax(score)
-    #except:
-    #    print( "Line 45 Error", score )
+
     index = np.unravel_index(np.argmax( score, axis=None), score.shape) 
-    #index = np.argmax(score)
 
     return index, max_element # tuple = list, int
 
@@ -144,13 +141,13 @@ def zero_padding(C, x_pad, y_pad):
     
     return np.pad(C, [(x_pad, ), (y_pad, )], mode='constant')
 
-def nextpow2(n):
+# def nextpow2(n):
 
-    """get the next power of 2 that's greater than n"""
-    m_f = np.log2(n)
-    m_i = np.ceil(m_f)
+#     """get the next power of 2 that's greater than n"""
+#     m_f = np.log2(n)
+#     m_i = np.ceil(m_f)
 
-    return 2**m_i
+#     return 2**m_i
 
 def crr_2d( pattern, template):
     """
@@ -166,7 +163,6 @@ def crr_2d( pattern, template):
     ----------------
         real_corr  Cross correlation array
      """  
-    '''Old padding'''
     
     side_edge_pad = template.shape[0] - pattern.shape[0] # move into zero padding function
     bottom_edge_pad = template.shape[1] - pattern.shape[1]
@@ -180,10 +176,9 @@ def crr_2d( pattern, template):
     #Offset pattern due to padding
     product = pattern_fft_conj[0: pattern_fft_conj.shape [0], 0: pattern_fft_conj.shape [1] ] *  template              
     ccr = matrix_ifft(product)    
-    real_corr = np.real(ccr) #np.real
+    real_corr = np.real(ccr) 
 
     return real_corr
-
 
 def resize_even(pattern, template):   
     extra_row = 0
@@ -191,22 +186,23 @@ def resize_even(pattern, template):
     a = pattern
     b = template
     if a.shape[0]%2!=0:
-        extra_row = 1
+        extra_row += 1
         a = np.vstack((a,np.zeros( (1,a.shape[1])  )))
 
     if a.shape[1]%2!=0:
-        extra_col = 1
+        extra_col += 1
         a = np.hstack((a,np.zeros( (a.shape[0],1) )))
 
     if b.shape[0]%2!=0:
         b = np.vstack((b,np.zeros( (1,b.shape[1]) )))
-        
+        extra_row += 1
+
     if b.shape[1]%2!=0:
         b = np.hstack((b,np.zeros( (b.shape[0],1) )))
+        extra_col += 1
 
-    return a, b
+    return a, b , extra_row, extra_col
    
-
 def find_offset(pattern, template): 
     """
     2D array offset index and value from cross correlation 
@@ -225,34 +221,35 @@ def find_offset(pattern, template):
     '''
     new resizing for odd sides
     '''
-    pattern, template = resize_even(pattern, template)
-
+    pattern, template, xtr_row, xtr_col = resize_even(pattern, template)
     real_corr = crr_2d( pattern, template) 
     best_match , match_value = find_best_match( real_corr )
-   
-    return (best_match[0] - 2 * pattern.shape[0] - extra_row, best_match[1] - 2 * pattern.shape[1] - extra_col), match_value
+    best_x = best_match[0] - 2 * pattern.shape[0] - xtr_row
+    best_y = best_match[1] - 2 * pattern.shape[1] - xtr_col
+
+    return (best_x, best_y), match_value
 
 def visualize_results(pattern,pattern_s,template,hor_cen,vert_cen,image_cross):
     '''
     Visualize pattern and template images   
     '''
-    
-    #plot shift FFT of image
-    # plt.subplot(2,2,1)
+    # plot shift FFT of image
+    plt.subplot(2,2,1)
     plt.imshow( np.fft.fftshift( np.imag(matrix_fft(pattern_s)) ) ) 
-    plt.show()
-    # plt.subplot(2,2,2)
+    #plt.show()
+    plt.subplot(2,2,2)
     plt.imshow( pattern )  
-    plt.show() 
-    # plt.subplot(2,2,3)
+    #plt.show() 
+    plt.subplot(2,2,3)
     plt.imshow( template ) 
-    plt.show() 
+    #plt.show() 
+    plt.imshow( template ) 
     circle=plt.Circle(( image_cross[1] + vert_cen ,\
     image_cross[0] + hor_cen  ),\
     50,facecolor='red', edgecolor='blue',linestyle='dotted', \
     linewidth='2.2')
     plt.gca().add_patch(circle)
-    plot_save("results")
+    #plot_save("results")
     plt.show()    
     plt.ion()  
 
