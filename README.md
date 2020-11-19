@@ -38,8 +38,10 @@ To excecute 2D spectral cross correlation algortithm, run `python spectral_2D_im
 ## Depth Mapping
 To excecute the stereo vision depth mapping:
 1. cd exp2_depthMapping
-2. Run `depth_map.py` and pass the local location of the desired images. 
+3. Run `dot_detection_CONV.py` and `dot_detection_cv.py` with calibration images to generate polynomial fit.  
+3. Run `dot_calibration.py`
+4. Run `depth_mapping_cv.py` and pass the local location of the desired images. 
 
 ## Moth Eye image analysis
 1. cd extensionMoth
-2. Run `circles.py`
+2. Run `circles.py`, toggle DIsplay to see statistics plots
