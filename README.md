@@ -25,7 +25,7 @@ To excecute 1D spatial cross correlation algortithm, follow these steps:
 3. To toggle SSD, set `use_SSD = True` on line `13`.
 4. To toggle the library function, set `use_library = True` on line `14`. 
 5. To toggle the handmade cross correlation, set `use_convolution = True` on line `15`. Currently this method takes approximately one hour. 
-6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. .<br>
+6. To toggle the faster handmade convolution method, set `speed_up = True` on line `16`. <br>
 
 To excecute 1D spectral cross correlation algortithm, run `python signal_offset_FT.py` to process files `sensorData1` and `sensorData2`. 
 
@@ -38,7 +38,7 @@ To excecute 2D spectral cross correlation algortithm, run `python spectral_2D_im
 ## Depth Mapping
 To excecute the stereo vision depth mapping:
 1. cd exp2_depthMapping
-3. Run `dot_detection_CONV.py` and `dot_detection_cv.py` for guassian dot detection. 
+3. Run `dot_detection_CONV.py` and `dot_detection_cv.py` for guassian dot detection using a convolution method and openCV. 
 3. Run `dot_calibration.py` with calibration images to generate polynomial fit.  
 4. Run `depth_mapping_cv.py` and pass the local location of the desired images. 
 5. Run `depth_mapping_fixed.py` for single depth map. Note that this method takes approximately 10 minutes. 
