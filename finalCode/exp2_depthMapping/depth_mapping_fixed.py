@@ -3,9 +3,35 @@ from PIL import Image
 import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import time
 from crossCorrFunctions import *
-from spatial_2D_image_match_functions import *
+
+def convert_gray(pattern_fn, template_fn):        
+    try:
+#         template = np.array(Image.open(template_fn))
+#         pattern = np.array(Image.open(pattern_fn))
+        template = np.array(mpimg.imread(template_fn))
+        pattern = np.array(mpimg.imread(pattern_fn))
+
+    except:
+        print("Error in Reading the files")
+        return False
+        
+    try:
+        template_gray = 0.2989 * template[:, :, 0] \
+                      + 0.5870 * template[:, :, 0] \
+                      + 0.1140 * template[:, :, 0]
+                   
+                   
+        pattern_gray = 0.2989 * pattern[:, :, 0] \
+                     + 0.5870 * pattern[:, :, 0] \
+                     + 0.1140 * pattern[:, :, 0]
+    except:
+        print("Error in Converting from RGB to Gray scale")
+        return False
+
+    return pattern_gray, template_gray
 
 def load_images(filepath):
     '''
@@ -20,8 +46,8 @@ def load_images(filepath):
     '''
     
     file_ext = "*.tiff*"
-    template_fn = ""
-    pattern_fn = ""
+    template_fn = []
+    pattern_fn = []
     
     fileNames = glob.glob(filepath + file_ext)
 
@@ -30,35 +56,17 @@ def load_images(filepath):
         
         # right_ is for the file type in the test folder may be removed if files are named properly
         if "right_" in fileName:  
-            template_fn = fileName
-            
+            template_fn.append(os.path.join(fileName)) 
+
         elif "left_" in fileName:
-            pattern_fn = fileName
+            pattern_fn.append(os.path.join(fileName)) 
 
     if template_fn == "" or pattern_fn == "":
         print("Both (or one) files not available")
         return False
-        
-    try:
-        template = np.array(Image.open(template_fn))
-        pattern = np.array(Image.open(pattern_fn))
-    except expression as identifier:
-        print("Error in Reading the files")
-        return False
-        
-    try:
-        template_gray = 0.2989 * template[:, :, 0] \
-                      + 0.5870 * template[:, :, 0] \
-                      + 0.1140 * template[:, :, 0]
-                   
-        pattern_gray = 0.2989 * pattern[:, :, 0] \
-                     + 0.5870 * pattern[:, :, 0] \
-                     + 0.1140 * pattern[:, :, 0]
-    except expression as identifier:
-        print("Error in Converting from RGB to Gray scale")
-        return False
 
-    return pattern_gray, template_gray
+    return pattern_fn, template_fn
+
 
 def get_grid(image, numY, numX):
     '''
@@ -72,7 +80,7 @@ def get_grid(image, numY, numX):
     #import pdb; pdb.set_trace()
     height, width = image.shape
     
-    #extra size +1 drops off if present because of integer division
+    #extra size +1 drops off if present becasue of integer division
     len_y = int(height / numY) 
     len_x = int(width / numX) 
 
@@ -234,7 +242,7 @@ def get_CrossCorrelation(pattern, template, winSize, ygrid, xgrid):
     #import pdb; pdb.set_trace()
     # print('getCrossCorrelation')
     #print(f'p = {pattern} t = {template}, w = {winSize} y = {ygrid} x = {xgrid}')
-    # corr = n_corr2d(pattern, template)
+    
     corr = normxcorr2(pattern, template)
         
     # corr = signal.correlate2d(template, pattern)
@@ -289,7 +297,7 @@ def get_MultipassCrossCorrelation(pattern, template, winSize, ygrid, xgrid):
 
     return([datay, datax])
 
-def ProcessImages(filepath):
+def ProcessImages(pattern, template):
     '''
    
     This  Function Receives the folderpath containing 
@@ -297,13 +305,11 @@ def ProcessImages(filepath):
     get_MultipassCrossCorrelation
     This returns the distance map as a 2D array 
     '''
-    
-    pattern, template = load_images(filepath)
-    
+      
     if not(pattern.any() and template.any()):
         return False
         
-    # no of rows an d column    
+    # no of rows and column    
     nn = 100  
 
     wins = get_grid(pattern, nn, nn)
@@ -334,17 +340,17 @@ def ProcessImages(filepath):
                                                  TempWinCen[0], TempWinCen[1])
             print(y)
 
-            for k in range(1):
-                for l in range(1):
-                    dpy[(i*2)+k][(j*2)+l] = abs(y[k][l])
-                    dpx[(i*2)+k][(j*2)+l] = abs(x[k][l])
+            for k in range(0, 2):
+                for l in range(0, 2):
+                    dpy[(i*4)+k][(j*4)+l] = abs(y[k][l])
+                    dpx[(i*4)+k][(j*4)+l] = abs(x[k][l])
 
     print(dpy, dpx)
 
     return[dpy, dpx]
 
 
-def ProcessImages2(filepath):
+def ProcessImages2(pattern, template):
     '''
     
     This  Function Receives the folderpath containing 
@@ -353,7 +359,6 @@ def ProcessImages2(filepath):
     '''
     
     #import pdb; pdb.set_trace()   #debugging for reading in
-    pattern, template = load_images(filepath)
     
     if not(pattern.any() and template.any()):
         return False
@@ -394,7 +399,7 @@ def ProcessImages2(filepath):
             TempWinCen[1] = int( (j * lenx) + len_x_div_2 ) 
 
             #SearchWin = get_SearchArea_Horizontal( template, TempWinCen, len_list, 3)
-            SearchWin = get_SearchArea(template, TempWinCen, len_list, 5)
+            SearchWin = get_SearchArea(template, TempWinCen, len_list, 3)
             #call difeerent strategies here
             if not len(SearchWin) > 1:
                 continue
@@ -410,28 +415,15 @@ def ProcessImages2(filepath):
     print(dpx)
     return[dpy, dpx]
 
-def main():
-    '''
-    Main implentation with toggle for single pass
-    or multi pass correlation 
-    The functions ProcessImages or ProcessImages2 can 
-    be called with the file path as argument and receive 
-    the distance map for plotting. 
-    '''
-    
-    # switch using multi pass correlation or single
-    multi = False  
-
-    if multi:
-        dpy, dpx = ProcessImages('.\\')   
-    else:
-        dpy, dpx = ProcessImages2('.\\')   
-        
+def create_depth_map(dpx,dpy):
     plt.imshow(dpy, cmap='gray')
+    plt.title("Depth map in ygrid")
     plt.show()
-    
+
     plt.imshow(dpx, cmap='gray')
+    plt.title("Depth map in xgrid")
     plt.show()
+
 
     x = dpx.shape[0]
     y = dpx.shape[1]
@@ -441,11 +433,47 @@ def main():
             z[i][j] = np.sqrt((dpx[i][j])**2 + (dpy[i][j])*2)
 
     plt.imshow(z, cmap='gray')    
+    plt.title("Depth map")
     plt.show()
+
+
+def main():
+    '''
+    Main implentation with toggle for single pass
+    or multi pass correlation 
+    The functions ProcessImages or ProcessImages2 can 
+    be called with the file path as argument and receive 
+    the distance map for plotting. 
+    '''
+    all_left_images, all_right_images = load_images("uncalibImage\\")
+    print(len(all_right_images))
+
+    # switch using multi pass correlation or single
+    multi = False  
+
+    # 'uncalibImage\\'
+
+
+    for idx in range(0, len(all_right_images)):
+
+        #Print start of the processing step
+        print("______________________________________________________________")
+        print("Processing image set "+str(idx+1))
+        left_Image = all_left_images[idx]
+        right_Image = all_right_images[idx]
+        print("Input image names :: ")
+        print(left_Image, right_Image)
+        print("______________________________________________________________")
+
+        left_Image_gr, right_Image_gr = convert_gray(left_Image, right_Image)
+
+        if multi:
+            dpy, dpx = ProcessImages( left_Image_gr, right_Image_gr )   
+        else:
+            dpy, dpx = ProcessImages2( left_Image_gr, right_Image_gr )   
+
+        create_depth_map(dpx,dpy)
 
 
 if __name__ == '__main__':
     main()
-
-
-
