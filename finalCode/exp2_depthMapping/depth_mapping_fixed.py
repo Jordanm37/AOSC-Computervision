@@ -400,7 +400,7 @@ def ProcessImages2(pattern, template):
 
             #SearchWin = get_SearchArea_Horizontal( template, TempWinCen, len_list, 3)
             SearchWin = get_SearchArea(template, TempWinCen, len_list, 3)
-            #call difeerent strategies here
+            #call different strategies here
             if not len(SearchWin) > 1:
                 continue
             # import pdb; pdb.set_trace() 
